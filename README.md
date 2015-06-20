@@ -1,4 +1,6 @@
-# Retrofit2
+# retrofit2
+
+![retrofit2](art/retrofit2.png)
 
 Retrofit2 turns your REST API into a Java interface.
 
