@@ -25,7 +25,7 @@ GitHubService github = GitHubService.create();
 Each call on the generated GitHubService makes an HTTP request to the remote webserver.
 
 ```java
-List<Repo> repos = service.listRepos("octocat");
+List<Repo> repos = github.listRepos("octocat");
 ```
 
 Use annotations to describe the HTTP request:
