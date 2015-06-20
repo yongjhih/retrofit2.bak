@@ -4,6 +4,8 @@
 
 Retrofit2 turns your REST API into a Java interface.
 
+Inspired by retrofit, compile-time version.
+
 ```java
 @Retrofit("https://api.github.com")
 public abstract class GitHubService {
