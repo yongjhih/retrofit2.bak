@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2015 8tory, Inc.
  * Copyright (C) 2012 Google, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +19,7 @@ package retrofit.processor;
 import retrofit.Retrofit;
 import com.google.auto.service.AutoService;
 import com.google.common.base.Functions;
+import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
@@ -37,10 +39,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 import javax.annotation.Generated;
 import javax.annotation.processing.AbstractProcessor;
@@ -57,6 +63,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -162,6 +169,20 @@ public class RetrofitProcessor extends AbstractProcessor {
     return generatedClassName(type, "Retrofit_");
   }
 
+  public interface Action1<T> {
+      void call(T t);
+  }
+
+  private void onAnnotationForProperty(AnnotationMirror annotation) {
+      onAnnotationForProperty.call(annotation);
+  }
+
+  private Action1<? super AnnotationMirror> onAnnotationForProperty;
+
+  private void annotationForProperty(Action1<? super AnnotationMirror> onAnnotationForProperty) {
+      this.onAnnotationForProperty = onAnnotationForProperty;
+  }
+
   /**
    * A property of an {@code @Retrofit} class, defined by one of its abstract methods.
    * An instance of this class is made available to the Velocity template engine for
@@ -174,19 +195,228 @@ public class RetrofitProcessor extends AbstractProcessor {
     private final String identifier;
     private final ExecutableElement method;
     private final String type;
+    private String typeArgs;
     private final ImmutableList<String> annotations;
+    private final String args;
+    private final String path;
+    private final Map<String, String> queries;
+    private final List<String> queryMaps;
+    private final List<String> queryBundles;
+    private final boolean isGet;
+    private final boolean isPost;
+    private final boolean isDelete;
+    private final String body;
+    private final String callbackType;
+    private final String callbackArg;
+    private final ProcessingEnvironment processingEnv;
+    private final TypeSimplifier typeSimplifier;
+    private final List<String> permissions;
 
     Property(
         String name,
         String identifier,
         ExecutableElement method,
         String type,
-        TypeSimplifier typeSimplifier) {
+        TypeSimplifier typeSimplifier,
+        ProcessingEnvironment processingEnv
+        ) {
       this.name = name;
       this.identifier = identifier;
       this.method = method;
       this.type = type;
+      this.typeSimplifier = typeSimplifier;
+      this.processingEnv = processingEnv;
       this.annotations = buildAnnotations(typeSimplifier);
+      this.args = formalTypeArgsString(method);
+      this.path = buildPath(method);
+      this.typeArgs = buildTypeArguments(type);
+      this.queries = buildQueries(method);
+      this.queryMaps = buildQueryMaps(method);
+      this.queryBundles = buildQueryBundles(method);
+      this.isGet = buildIsGet(method);
+      this.isPost = buildIsPost(method);
+      this.isDelete = buildIsDelete(method);
+      this.body = buildBody(method);
+      this.callbackType = buildCallbackType(method);
+      this.callbackArg = buildCallbackArg(method);
+      if ("".equals(typeArgs)) typeArgs = callbackType;
+      this.permissions = buildPermissions(method);
+    }
+
+    private String buildTypeArguments(String type) {
+      Pattern pattern = Pattern.compile( "<(.*?)>" );
+      Matcher m = pattern.matcher(type);
+      if (m.find()) return m.group(1);
+      return "";
+    }
+
+
+    public String buildCallbackArg(ExecutableElement method) {
+        return "callback"; // TODO
+    }
+
+    public String buildCallbackType(ExecutableElement method) {
+      Types typeUtils = processingEnv.getTypeUtils();
+      TypeMirror callback = getTypeMirror(processingEnv, Retrofit.Callback.class);
+
+      List<? extends VariableElement> parameters = method.getParameters();
+      for (VariableElement parameter : parameters) {
+        TypeMirror type = parameter.asType();
+        if (type instanceof DeclaredType) {
+          List<? extends TypeMirror> params = ((DeclaredType) type).getTypeArguments();
+          if (params.size() == 1) {
+            callback = typeUtils.getDeclaredType((TypeElement) typeUtils
+                    .asElement(callback), new TypeMirror[] {params.get(0)});
+
+            if (typeUtils.isSubtype(type, callback)) {
+              return typeSimplifier.simplify(params.get(0));
+            }
+          }
+        }
+      }
+      return "";
+    }
+
+    public boolean buildIsGet(ExecutableElement method) {
+        // TODO duplicated routine
+        return method.getAnnotation(retrofit.Retrofit.GET.class) != null;
+    }
+
+    public boolean buildIsPost(ExecutableElement method) {
+        // TODO duplicated routine
+        return method.getAnnotation(retrofit.Retrofit.POST.class) != null;
+    }
+
+    public boolean buildIsDelete(ExecutableElement method) {
+        // TODO duplicated routine
+        return method.getAnnotation(retrofit.Retrofit.DELETE.class) != null;
+    }
+
+    public String buildBody(ExecutableElement method) {
+      String body = "";
+
+      // TODO duplicated routine
+      retrofit.Retrofit.POST post = method.getAnnotation(retrofit.Retrofit.POST.class);
+      if (post == null) return body;
+
+      // TODO duplicated code
+      List<? extends VariableElement> parameters = method.getParameters();
+      for (VariableElement parameter : parameters) {
+        if (parameter.getAnnotation(retrofit.Retrofit.Body.class) != null) {
+          body = parameter.getSimpleName().toString();
+        }
+      }
+      return body;
+    }
+
+    public List<String> buildPermissions(ExecutableElement method) {
+      retrofit.Retrofit.GET get = method.getAnnotation(retrofit.Retrofit.GET.class);
+      retrofit.Retrofit.POST post = method.getAnnotation(retrofit.Retrofit.POST.class);
+      retrofit.Retrofit.DELETE delete = method.getAnnotation(retrofit.Retrofit.DELETE.class);
+      if (get != null) return Arrays.asList(get.permissions());
+      if (post != null) return Arrays.asList(post.permissions());
+      if (delete != null) return Arrays.asList(delete.permissions());
+      return Collections.emptyList();
+    }
+
+    // /{postId}
+    // /{userIdA}/friends/{userIdB}
+    // "/" + userIdA + "/friends/" + userIdB
+    // "/" + userIdA + "/friends/" + userIdB + ""
+    public String buildPath(ExecutableElement method) {
+      // TODO duplicated routine
+      retrofit.Retrofit.GET get = method.getAnnotation(retrofit.Retrofit.GET.class);
+      retrofit.Retrofit.POST post = method.getAnnotation(retrofit.Retrofit.POST.class);
+      retrofit.Retrofit.DELETE delete = method.getAnnotation(retrofit.Retrofit.DELETE.class);
+      String fullPath = null;
+      if (get != null) fullPath = get.value();
+      if (post != null) fullPath = post.value();
+      if (delete != null) fullPath = delete.value();
+
+      List<? extends VariableElement> parameters = method.getParameters();
+      for (VariableElement parameter : parameters) {
+        retrofit.Retrofit.Path path = parameter
+            .getAnnotation(retrofit.Retrofit.Path.class);
+        if ((path != null) && (!path.value().equals("null"))) {
+          fullPath = fullPath.replace("{" + path.value() + "}", "\" + " +
+              parameter.getSimpleName().toString() + " + \"");
+        } else {
+          fullPath = fullPath.replace("{" + parameter.getSimpleName().toString() + "}", "\" + " +
+              parameter.getSimpleName().toString() + " + \"");
+        }
+      }
+
+      return "\"" + fullPath.replaceAll("\\?.+", "") + "\"";
+    }
+
+    public Map<String, String> buildQueries(ExecutableElement method) {
+      Map<String, String> map = new HashMap<String, String>();
+
+      // TODO duplicated routine
+      retrofit.Retrofit.GET get = method.getAnnotation(retrofit.Retrofit.GET.class);
+      retrofit.Retrofit.POST post = method.getAnnotation(retrofit.Retrofit.POST.class);
+      retrofit.Retrofit.DELETE delete = method.getAnnotation(retrofit.Retrofit.DELETE.class);
+      String fullPath = null;
+      if (get != null) fullPath = get.value();
+      if (post != null) fullPath = post.value();
+      if (delete != null) fullPath = delete.value();
+
+      if (fullPath.indexOf("?") != -1) {
+        fullPath = fullPath.replaceAll("^.*\\?", "");
+        String[] queries = fullPath.split("&");
+        for (String query : queries) {
+          String[] keyValue = query.split("=");
+          map.put("\"" + keyValue[0] + "\"", "\"" + keyValue[1] + "\"");
+        }
+      }
+
+      List<? extends VariableElement> parameters = method.getParameters();
+      for (VariableElement parameter : parameters) {
+        retrofit.Retrofit.Query query = parameter
+            .getAnnotation(retrofit.Retrofit.Query.class);
+        if (query == null) {
+          continue;
+        }
+
+        if (!query.value().equals("null")) {
+          map.put("\"" + query.value() + "\"", parameter.getSimpleName().toString());
+        } else {
+          map.put("\"" + parameter.getSimpleName().toString() + "\"",
+              parameter.getSimpleName().toString());
+        }
+      }
+
+      return map;
+    }
+
+    public List<String> buildQueryMaps(ExecutableElement method) {
+      List<String> queryMaps = new ArrayList<String>();
+      List<? extends VariableElement> parameters = method.getParameters();
+      for (VariableElement parameter : parameters) {
+        retrofit.Retrofit.QueryMap queryMap = parameter
+            .getAnnotation(retrofit.Retrofit.QueryMap.class);
+        if (queryMap == null) {
+          continue;
+        }
+
+        queryMaps.add(parameter.getSimpleName().toString());
+      }
+      return queryMaps;
+    }
+
+    public List<String> buildQueryBundles(ExecutableElement method) {
+      List<String> queryBundles = new ArrayList<String>();
+      List<? extends VariableElement> parameters = method.getParameters();
+      for (VariableElement parameter : parameters) {
+        retrofit.Retrofit.QueryBundle queryBundle = parameter
+            .getAnnotation(retrofit.Retrofit.QueryBundle.class);
+        if (queryBundle == null) {
+          continue;
+        }
+
+        queryBundles.add(parameter.getSimpleName().toString());
+      }
+      return queryBundles;
     }
 
     private ImmutableList<String> buildAnnotations(TypeSimplifier typeSimplifier) {
@@ -241,12 +471,16 @@ public class RetrofitProcessor extends AbstractProcessor {
       return (TypeElement) method.getEnclosingElement();
     }
 
-    TypeMirror getTypeMirror() {
+    TypeMirror getReturnType() {
       return method.getReturnType();
     }
 
     public String getType() {
       return type;
+    }
+
+    public String getTypeArgs() {
+      return typeArgs;
     }
 
     public TypeKind getKind() {
@@ -284,8 +518,60 @@ public class RetrofitProcessor extends AbstractProcessor {
       return method.getReturnType().getKind().isPrimitive();
     }
 
+    public boolean isCallback() {
+      return (callbackType != null && !"".equals(callbackType));
+    }
+
+    public String getCallbackType() {
+      return callbackType;
+    }
+
+    public String getCallbackArg() {
+      return callbackArg;
+    }
+
+    public String getBody() {
+      return body;
+    }
+
+    public List<String> getPermissions() {
+      return permissions;
+    }
+
+    public boolean isGet() {
+      return isGet;
+    }
+
+    public boolean isPost() {
+      return isPost;
+    }
+
+    public boolean isDelete() {
+      return isDelete;
+    }
+
     public List<String> getAnnotations() {
       return annotations;
+    }
+
+    public String getArgs() {
+      return args;
+    }
+
+    public String getPath() {
+      return path;
+    }
+
+    public Map<String, String> getQueries() {
+      return queries;
+    }
+
+    public List<String> getQueryMaps() {
+      return queryMaps;
+    }
+
+    public List<String> getQueryBundles() {
+      return queryBundles;
     }
 
     public boolean isNullable() {
@@ -377,6 +663,13 @@ public class RetrofitProcessor extends AbstractProcessor {
           }
         }
         if (!alreadySeen) {
+          /*
+          retrofit.Retrofit.GET action = method.getAnnotation(retrofit.Retrofit.GET.class);
+          System.out.printf(
+              "%s Action value = %s\n",
+              method.getSimpleName(),
+              action == null ? null : action.value() );
+          */
           methods.add(method);
         }
       }
@@ -461,7 +754,8 @@ public class RetrofitProcessor extends AbstractProcessor {
       String propertyType = typeSimplifier.simplify(method.getReturnType());
       String propertyName = methodToPropertyName.get(method);
       String identifier = methodToIdentifier.get(method);
-      props.add(new Property(propertyName, identifier, method, propertyType, typeSimplifier));
+      List<String> args = new ArrayList<String>();
+      props.add(new Property(propertyName, identifier, method, propertyType, typeSimplifier, processingEnv));
     }
     // If we are running from Eclipse, undo the work of its compiler which sorts methods.
     eclipseHack().reorderProperties(props);
@@ -497,6 +791,7 @@ public class RetrofitProcessor extends AbstractProcessor {
   }
 
   private static boolean allGetters(Iterable<ExecutableElement> methods) {
+    if (true) return true;
     for (ExecutableElement method : methods) {
       String name = method.getSimpleName().toString();
       // TODO(user): decide whether getfoo() (without a capital) is a getter. Currently it is.
@@ -521,6 +816,7 @@ public class RetrofitProcessor extends AbstractProcessor {
   }
 
   private void checkDuplicateGetters(Map<ExecutableElement, String> methodToIdentifier) {
+      if (true) return;
     Set<String> seen = Sets.newHashSet();
     for (Map.Entry<ExecutableElement, String> entry : methodToIdentifier.entrySet()) {
       if (!seen.add(entry.getValue())) {
@@ -611,12 +907,7 @@ public class RetrofitProcessor extends AbstractProcessor {
           }
           toImplement.add(method);
         } else {
-          // This could reasonably be an error, were it not for an Eclipse bug in
-          // ElementUtils.override that sometimes fails to recognize that one method overrides
-          // another, and therefore leaves us with both an abstract method and the subclass method
-          // that overrides it. This shows up in RetrofitTest.LukesBase for example.
-          errorReporter.reportWarning("@Retrofit classes cannot have abstract methods other than"
-              + " property getters and Builder converters", method);
+          toImplement.add(method);
         }
       }
     }
@@ -693,7 +984,11 @@ public class RetrofitProcessor extends AbstractProcessor {
   }
 
   private TypeMirror getTypeMirror(Class<?> c) {
-    return processingEnv.getElementUtils().getTypeElement(c.getName()).asType();
+    return getTypeMirror(processingEnv, c);
+  }
+
+  private static TypeMirror getTypeMirror(ProcessingEnvironment processingEnv, Class<?> c) {
+    return processingEnv.getElementUtils().getTypeElement(c.getCanonicalName()).asType();
   }
 
   // The @Retrofit type, with a ? for every type.
@@ -708,6 +1003,57 @@ public class RetrofitProcessor extends AbstractProcessor {
           + Joiner.on(", ").join(
           FluentIterable.from(typeParameters).transform(Functions.constant("?")))
           + ">";
+    }
+  }
+
+  private static String catArgsString(ExecutableElement method) {
+    List<? extends VariableElement> parameters = method.getParameters();
+    if (parameters.isEmpty()) {
+      return "";
+    } else {
+      return ""
+        + Joiner.on(" + ").join(
+        FluentIterable.from(parameters).transform(new Function<VariableElement, String>() {
+          @Override
+          public String apply(VariableElement element) {
+            return "" + element.getSimpleName();
+          }
+        }))
+        + "";
+    }
+  }
+
+  private static String formalArgsString(ExecutableElement method) {
+    List<? extends VariableElement> parameters = method.getParameters();
+    if (parameters.isEmpty()) {
+      return "";
+    } else {
+      return ""
+        + Joiner.on(", ").join(
+        FluentIterable.from(parameters).transform(new Function<VariableElement, String>() {
+          @Override
+          public String apply(VariableElement element) {
+            return "" + element.getSimpleName();
+          }
+        }))
+        + "";
+    }
+  }
+
+  private static String formalTypeArgsString(ExecutableElement method) {
+    List<? extends VariableElement> parameters = method.getParameters();
+    if (parameters.isEmpty()) {
+      return "";
+    } else {
+      return ""
+        + Joiner.on(", ").join(
+        FluentIterable.from(parameters).transform(new Function<VariableElement, String>() {
+          @Override
+          public String apply(VariableElement element) {
+            return "final " + element.asType() + " " + element.getSimpleName();
+          }
+        }))
+        + "";
     }
   }
 

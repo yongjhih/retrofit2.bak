@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2015 8tory, Inc.
  * Copyright (C) 2012 Google, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
@@ -18,58 +19,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * Specifies that <a href="https://github.com/frankiesardo/retrofit">Retrofit</a> should
- * generate an implementation class for the annotated abstract class, implementing the standard
- * {@link Object} methods like {@link Object#equals equals} to have conventional value semantics. A
- * simple example: <pre>
- *
- *   &#64;Retrofit
- *   abstract class Person implements Parcelable {
- *     static Person create(String name, int id) {
- *       return new Retrofit_Person(name, id);
- *     }
- *
- *     abstract String name();
- *     abstract int id();
- *   }</pre>
- *
- * @author Éamonn McManus
- * @author Kevin Bourrillion
- * @see <a href="https://github.com/frankiesardo/retrofit">Retrofit User's Guide</a>
- */
+import java.util.List;
+
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
 public @interface Retrofit {
 
-  /**
-   * Specifies that Retrofit should generate an implementation of the annotated class or interface,
-   * to serve as a <i>builder</i> for the value-type class it is nested within. As a simple example,
-   * here is an alternative way to write the {@code Person} class mentioned in the {@link Retrofit}
-   * example: <pre>
-   *
-   *   &#64;Retrofit
-   *   abstract class Person {
-   *     static Builder builder() {
-   *       return new Retrofit_Person.Builder();
-   *     }
-   *
-   *     abstract String name();
-   *     abstract int id();
-   *
-   *     &#64;Retrofit.Builder
-   *     interface Builder {
-   *       Builder name(String x);
-   *       Builder id(int x);
-   *       Person build();
-   *     }
-   *   }</pre>
-   *
-   * <p><b>This API is provisional and subject to change.</b></p>
-   *
-   * @author Éamonn McManus
-   */
-  @Retention(RetentionPolicy.SOURCE)
+  @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
   @Target(ElementType.TYPE)
   public @interface Builder {
   }
@@ -80,8 +36,61 @@ public @interface Retrofit {
    * the {@link Builder @Retrofit.Builder} implementation, immediately after constructing the new
    * object. It can throw an exception if the new object fails validation checks.
    */
-  @Retention(RetentionPolicy.SOURCE)
+  @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
   @Target(ElementType.METHOD)
   public @interface Validate {
+  }
+
+  @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
+  @Target(ElementType.METHOD)
+  public @interface GET {
+    String value();
+    String[] permissions() default {};
+  }
+
+  @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
+  @Target(ElementType.METHOD)
+  public @interface POST {
+    String value();
+    String[] permissions() default {};
+  }
+
+  @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
+  @Target(ElementType.METHOD)
+  public @interface DELETE {
+    String value();
+    String[] permissions() default {};
+  }
+
+  @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
+  @Target(ElementType.PARAMETER)
+  public @interface Path {
+    String value() default "null";
+  }
+
+  @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
+  @Target(ElementType.PARAMETER)
+  public @interface Query {
+    String value() default "null";
+  }
+
+  @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
+  @Target(ElementType.PARAMETER)
+  public @interface QueryMap {
+  }
+
+  @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
+  @Target(ElementType.PARAMETER)
+  public @interface QueryBundle {
+  }
+
+  @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
+  @Target(ElementType.PARAMETER)
+  public @interface Body {
+  }
+
+  public static interface Callback<T> {
+      public void onCompleted(List<T> t);
+      public void onError(Throwable e);
   }
 }
