@@ -1,2 +1,2 @@
-include 'auto-parcel', 'auto-parcel-processor', ':sample'
-rootProject.name = 'auto-parcel-parent'
+include 'retrofit2', 'retrofit2-processor', ':retrofit2-sample'
+rootProject.name = 'retrofit2-parent'
