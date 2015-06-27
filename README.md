@@ -13,7 +13,11 @@ public abstract class GitHubService {
   List<Repo> listRepos(@Path("user") String user);
   
   public static GitHubService create() {
-    return new Retrofit_GitHubService();
+    Gson gson = new GsonBuilder()
+      .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+      .registerTypeAdapter(Date.class, new DateTypeAdapter())
+      .create();
+    return new Retrofit_GitHubService(new GsonConverter(gson));
   }
 }
 ```
