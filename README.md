@@ -33,3 +33,7 @@ Use annotations to describe the HTTP request:
 * URL parameter replacement and query parameter support
 * Object conversion to request body (e.g., JSON, protocol buffers)
 * Multipart request body and file upload
+
+## TODO
+
+* Custom converter
