@@ -8,28 +8,24 @@ Inspired by retrofit, compile-time version.
 
 ```java
 @Retrofit("https://api.github.com")
-public abstract class GitHubService {
+public abstract class GitHub {
   @GET("/users/{user}/repos")
-  List<Repo> listRepos(@Path("user") String user);
+  Observable<Repo> repos(@Path("user") String user);
   
-  public static GitHubService create() {
-    Gson gson = new GsonBuilder()
-      .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-      .registerTypeAdapter(Date.class, new DateTypeAdapter())
-      .create();
-    return new Retrofit_GitHubService(new GsonConverter(gson));
+  public static GitHub create() {
+    return new Retrofit_GitHub();
   }
 }
 ```
 
 ```java
-GitHubService github = GitHubService.create();
+GitHub github = GitHub.create();
 ```
 
 Each call on the generated GitHubService makes an HTTP request to the remote webserver.
 
 ```java
-List<Repo> repos = github.listRepos("octocat");
+github.repos("octocat").forEach(System.out::println);
 ```
 
 Use annotations to describe the HTTP request:
