@@ -55,7 +55,7 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
                 try {
                     return response.body().string();
                 } catch (Exception e) {
-                    return null;
+                    throw new RuntimeException(e);
                 }
             }
         }).filter(new Func1<String, Boolean>() {
@@ -67,23 +67,28 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
             @Override public $p.typeArgs call(String json) {
                 // TODO Using RetrofitConveter
                 try {
-                    return LoganSquare.parse(json, ${p.typeArgs}.class);
+                    return LoganSquare.parse(json, AutoJson_${p.typeArgs}.class);
                 } catch (Exception e) {
-                    return null;
+                    throw new RuntimeException(e);
                 }
             }
             */
-        }).map(new Func1<String, List<$p.typeArgs>>() {
-            @Override public List<$p.typeArgs> call(String json) {
+        }).map(new Func1<String, List<? extends $p.typeArgs>>() {
+            @Override public List<? extends $p.typeArgs> call(String json) {
                 // TODO Using RetrofitConveter
                 try {
-                    return LoganSquare.parseList(json, ${p.typeArgs}.class);
+                    System.out.println(json);
+                    return LoganSquare.parseList(json, AutoJson_${p.typeArgs}.class);
                 } catch (Exception e) {
-                    return null;
+                    throw new RuntimeException(e);
                 }
             }
-        }).flatMap(new Func1<List<$p.typeArgs>, Observable<$p.typeArgs>>() {
-            @Override public Observable<$p.typeArgs> call(List<$p.typeArgs> list) {
+        }).filter(new Func1<List<? extends $p.typeArgs>, Boolean>() {
+            @Override public Boolean call(List<? extends $p.typeArgs> list) {
+                return list != null;
+            }
+        }).flatMap(new Func1<List<? extends $p.typeArgs>, Observable<$p.typeArgs>>() {
+            @Override public Observable<$p.typeArgs> call(List<? extends $p.typeArgs> list) {
                 return Observable.from(list);
             }
         }).filter(new Func1<$p.typeArgs, Boolean>() {

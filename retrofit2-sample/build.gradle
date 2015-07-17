@@ -1,8 +1,22 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.2.3'
+        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.4'
+    }
+}
+
+repositories {
+    jcenter()
+}
+
 apply plugin: 'com.android.application'
 apply plugin: 'com.neenbedankt.android-apt'
 
 android {
-    compileSdkVersion 19
+    compileSdkVersion 22
     buildToolsVersion "22.0.1"
 
     lintOptions {
@@ -11,13 +25,27 @@ android {
 }
 
 dependencies {
-  compile project(':retrofit2')
-  apt project(':retrofit2-processor')
-  compile 'io.reactivex:rxjava:1.0.9'
-  compile 'com.squareup.okhttp:okhttp:2.4.0'
-  compile 'com.infstory:logansquare:1.1.1'
-  apt 'com.infstory:logansquare-compiler:1.1.1'
-  compile 'com.infstory:auto-json:1.0.2'
-  apt 'com.infstory:auto-json-processor:1.0.2'
-  compile 'com.android.support:support-annotations:22.2.0'
+    compile project(':retrofit2')
+    apt project(':retrofit2-processor')
+    compile 'io.reactivex:rxjava:1.0.9'
+    compile 'com.squareup.okhttp:okhttp:2.4.0'
+    compile 'com.infstory:logansquare:1.1.1'
+    apt 'com.infstory:logansquare-compiler:1.1.1'
+    compile 'com.infstory:auto-json:1.0.2'
+    apt 'com.infstory:auto-json-processor:1.0.2'
+    compile 'com.android.support:support-annotations:22.2.0'
+
+    // testing
+    testCompile 'junit:junit-dep:4.10'
+    testCompile 'org.mockito:mockito-core:1.8.5'
+    testCompile('org.robolectric:robolectric:2.3') {
+      exclude group: 'com.android.support'
+    }
 }
+
+//test {
+    //testLogging {
+        //events "passed", "skipped", "failed", "standardOut", "standardError"
+    //}
+    //testLogging.showStandardStreams = true
+//}

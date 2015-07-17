@@ -18,18 +18,4 @@ public abstract class GitHub {
     public static GitHub create() {
         return new Retrofit_GitHub();
     }
-
-    @AutoJson
-    public static abstract class Contributor {
-        @Nullable
-        @AutoJson.Field
-        public abstract String login();
-        @Nullable
-        @AutoJson.Field
-        public abstract int contributions();
-
-        public static Contributor create() {
-            return new AutoJson_GitHub_Contributor();
-        }
-    }
 }
