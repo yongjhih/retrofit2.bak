@@ -13,9 +13,6 @@ public class MainActivity extends Activity {
     setContentView(R.layout.activity_main);
     findViewById(R.id.click_me).setOnClickListener(new View.OnClickListener() {
       @Override public void onClick(View v) {
-        Intent detailIntent = new Intent(MainActivity.this, DetailActivity.class);
-        detailIntent.putExtra("Person", SampleData.BOB);
-        startActivity(detailIntent);
       }
     });
   }

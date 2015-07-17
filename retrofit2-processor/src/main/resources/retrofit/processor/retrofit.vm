@@ -24,27 +24,25 @@ import rx.Observable;
 import rx.Subscriber;
 import rx.functions.*;
 
-//import com.bluelinelabs.logansquare.LoganSquare;
+import com.bluelinelabs.logansquare.LoganSquare;
 
 import android.util.Log;
 
-import java.util.Map;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
-import java.util.HashSet;
+
+import com.squareup.okhttp.*;
+import java.io.IOException;
 
 ${gwtCompatibleAnnotation}
 public final class $subclass$formalTypes extends $origClass$actualTypes {
 
+    final OkHttpClient client;
+
 ## Constructor
 
-  public $subclass() {
-    super();
-  }
+    public $subclass() {
+        client = new OkHttpClient();
+    }
 
 ## Property getters
 
@@ -52,9 +50,76 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
 
     @Override
     ${p.access}${p.type} ${p.getter}(${p.args}) {
-        //LoganSquare.parse(response.getJSONObject().toString(), ${p.typeArgs}.class);
+        return Observable.create(new OnSubscribeResponse(client, new Request.Builder().url("${endpoint}${p.path}").build())).map(new Func1<Response, String>() {
+            @Override public String call(Response response) {
+                try {
+                    return response.body().string();
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+        }).filter(new Func1<String, Boolean>() {
+            @Override public Boolean call(String json) {
+                return json != null;
+            }
+            /*
+        }).map(new Func1<String, $p.typeArgs>() {
+            @Override public $p.typeArgs call(String json) {
+                // TODO Using RetrofitConveter
+                try {
+                    return LoganSquare.parse(json, ${p.typeArgs}.class);
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+            */
+        }).map(new Func1<String, List<$p.typeArgs>>() {
+            @Override public List<$p.typeArgs> call(String json) {
+                // TODO Using RetrofitConveter
+                try {
+                    return LoganSquare.parseList(json, ${p.typeArgs}.class);
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+        }).flatMap(new Func1<List<$p.typeArgs>, Observable<$p.typeArgs>>() {
+            @Override public Observable<$p.typeArgs> call(List<$p.typeArgs> list) {
+                return Observable.from(list);
+            }
+        }).filter(new Func1<$p.typeArgs, Boolean>() {
+            @Override public Boolean call($p.typeArgs object) {
+                return object != null;
+            }
+        });
     }
 
 #end
+
+    public static class OnSubscribeResponse implements Observable.OnSubscribe<Response> {
+        final Request request;
+        final OkHttpClient client;
+
+        public OnSubscribeResponse(OkHttpClient client, Request request) {
+            this.request = request;
+            this.client = client;
+        }
+
+        @Override
+        public void call(final Subscriber<? super Response> sub) {
+            try {
+                client.newCall(request).enqueue(new Callback() {
+                    @Override public void onFailure(Request request, IOException e) {
+                        sub.onError(e);
+                    }
+                    @Override public void onResponse(Response response) {
+                        sub.onNext(response);
+                        sub.onCompleted();
+                    }
+                });
+            } catch (Exception e) {
+                sub.onError(e);
+            }
+        }
+    }
 
 }

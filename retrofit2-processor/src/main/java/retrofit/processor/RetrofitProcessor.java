@@ -337,7 +337,7 @@ public class RetrofitProcessor extends AbstractProcessor {
       for (VariableElement parameter : parameters) {
         retrofit.Retrofit.Path path = parameter
             .getAnnotation(retrofit.Retrofit.Path.class);
-        if ((path != null) && (!path.value().equals("null"))) {
+        if ((path != null) && (!path.value().equals(""))) {
           fullPath = fullPath.replace("{" + path.value() + "}", "\" + " +
               parameter.getSimpleName().toString() + " + \"");
         } else {
@@ -346,7 +346,7 @@ public class RetrofitProcessor extends AbstractProcessor {
         }
       }
 
-      return "\"" + fullPath.replaceAll("\\?.+", "") + "\"";
+      return fullPath.replaceAll("\\?.+", "");
     }
 
     public Map<String, String> buildQueries(ExecutableElement method) {
@@ -378,7 +378,7 @@ public class RetrofitProcessor extends AbstractProcessor {
           continue;
         }
 
-        if (!query.value().equals("null")) {
+        if (!query.value().equals("")) {
           map.put("\"" + query.value() + "\"", parameter.getSimpleName().toString());
         } else {
           map.put("\"" + parameter.getSimpleName().toString() + "\"",
@@ -764,6 +764,8 @@ public class RetrofitProcessor extends AbstractProcessor {
     vars.formalTypes = typeSimplifier.formalTypeParametersString(type);
     vars.actualTypes = TypeSimplifier.actualTypeParametersString(type);
     vars.wildcardTypes = wildcardTypeParametersString(type);
+    retrofit.Retrofit typeAnnoation = type.getAnnotation(retrofit.Retrofit.class);
+    vars.endpoint = typeAnnoation.value();
 
     TypeElement parcelable = processingEnv.getElementUtils().getTypeElement("android.os.Parcelable");
     vars.parcelable = parcelable != null
