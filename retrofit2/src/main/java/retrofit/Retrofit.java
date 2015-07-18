@@ -61,6 +61,13 @@ public @interface Retrofit {
 
   @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
   @Target(ElementType.METHOD)
+  public @interface PUT {
+    String value();
+    String[] permissions() default {};
+  }
+
+  @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
+  @Target(ElementType.METHOD)
   public @interface DELETE {
     String value() default "";
     String[] permissions() default {};
@@ -68,14 +75,59 @@ public @interface Retrofit {
 
   @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
   @Target(ElementType.PARAMETER)
-  public @interface Path {
+  public @interface Body { // For @Post(@Body JsonString/Model.toJsonString()) in mimetype of "application/json; charset=utf8-8"
+  }
+
+  @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
+  @Target(ElementType.METHOD)
+  public @interface FormUrlEncoded { // For @FormUrlEncoded @POST(@Field)
+  }
+
+  @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
+  @Target(ElementType.METHOD)
+  public @interface Multipart { // For @Multipart @PUT(@Part)
+  }
+
+  @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
+  @Target(ElementType.METHOD)
+  public @interface Headers { // For @Headers @GET|@PUT|@POST|@DELETE
+    String[] value();
+  }
+
+  @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
+  @Target(ElementType.PARAMETER)
+  public @interface Header { // For @GET|@PUT|@POST|@DELETE(@Header)
+    String value();
+  }
+
+  @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
+  @Target(ElementType.METHOD)
+  public @interface Streaming { // For @GET @Streaming
+  }
+
+  @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
+  @Target(ElementType.PARAMETER)
+  public @interface Path { // For @GET|@PUT|@POST|@DELETE(@Path)
     String value() default "";
   }
 
   @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
   @Target(ElementType.PARAMETER)
-  public @interface Query {
+  public @interface Query { // For @GET|@PUT|@POST|@DELETE(@Query)
     String value() default "";
+  }
+
+  @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
+  @Target(ElementType.PARAMETER)
+  public @interface Field { // For @FormUrlEncoded @POST(@Field)
+    String value() default "";
+  }
+
+  @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
+  @Target(ElementType.PARAMETER)
+  public @interface Part { // For @Multipart @PUT(@Part)
+    String value() default "";
+    String type() default "text/plain; charset=UTF-8"; // "text/plain; charset=UTF-8"|"text/x-markdown; charset=utf-8"
   }
 
   @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
@@ -86,11 +138,6 @@ public @interface Retrofit {
   @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
   @Target(ElementType.PARAMETER)
   public @interface QueryBundle {
-  }
-
-  @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
-  @Target(ElementType.PARAMETER)
-  public @interface Body {
   }
 
   public static interface Callback<T> {

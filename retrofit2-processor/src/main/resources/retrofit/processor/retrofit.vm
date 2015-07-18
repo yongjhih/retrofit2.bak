@@ -33,16 +33,31 @@ import java.util.List;
 import com.squareup.okhttp.*;
 import java.io.IOException;
 
+/**
+ * @see "https://github.com/square/okhttp/wiki/Recipes"
+ */
 ${gwtCompatibleAnnotation}
 public final class $subclass$formalTypes extends $origClass$actualTypes {
 
     final OkHttpClient client;
+    public static final String _MIME_APP_JSON = "applications/json";
+    public static final String _CHARSET_UTF8 = "charset=utf-8";
+    public static final String _MIME_APP_JSON_CHARSET_UTF8 = _MIME_APP_JSON + "; " + _CHARSET_UTF8;
 
 ## Constructor
 
     public $subclass() {
         client = new OkHttpClient();
+
+        /*
+        int cacheSize = 10 * 1024 * 1024; // 10 MiB
+        Cache cache = new Cache(cacheDirectory, cacheSize);
+
+        client = new OkHttpClient();
+        client.setCache(cache);
+        */
     }
+
 
 ## Property getters
 
@@ -57,7 +72,74 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
         if (!_url.startsWith("http://") && !_url.startsWith("https://")) {
             _url = "${baseUrl}" + _url;
         }
-        return Observable.create(new OnSubscribeResponse(client, new Request.Builder().url(_url).build())).map(new Func1<Response, String>() {
+
+        Request.Builder requestBuilder = new Request.Builder().url(_url);
+
+    #if ($p.get)
+
+    #elseif ($p.post)
+        #if ($p.body && $p.body != "")
+
+        String jsonString = null;
+        try {
+            jsonString = LoganSquare.serialize($p.body);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        //if (jsonString == null) throw new NullPointerException();
+        requestBuilder.post(RequestBody.create(MediaType.parse(_MIME_APP_JSON_CHARSET_UTF8), jsonString));
+
+        #elseif (!$p.fields.isEmpty())
+
+        FormEncodingBuilder formBuilder = new FormEncodingBuilder();
+
+            #foreach ($field in $p.fields.entrySet())
+
+        formBuilder.add("$field.key", $field.value);
+
+            #end
+
+        requestBuilder.post(formBuilder.build());
+
+        #end
+    #elseif ($p.put)
+        #if (!$p.parts.isEmpty())
+
+        MultipartBuilder partsBuilder = new MultipartBuilder().type(MultipartBuilder.FORM);
+
+            #foreach ($part in $p.parts.entrySet())
+
+                #if ($part.value.type == "")
+
+        partsBuilder.addPart(
+            Headers.of("Content-Disposition", "form-data; name=\"${part.key}\""),
+            RequestBody.create(null, ${part.value.name}));
+
+                #else
+
+        partsBuilder.addPart(
+            Headers.of("Content-Disposition", "form-data; name=\"${part.key}\""),
+            RequestBody.create(${part.value.type}, ${part.value.name}));
+
+                #end
+            #end
+
+        requestBuilder.put(partsBuilder.build());
+
+        #end
+    #elseif ($p.delete)
+
+        requestBuilder.delete();
+
+    #end
+
+    #foreach ($header in $p.headers.entrySet())
+
+        requestBuilder.addHeader("$header.key", "$header.value");
+
+    #end
+
+        return Observable.create(new OnSubscribeResponse(client, requestBuilder.build())).map(new Func1<Response, String>() {
             @Override public String call(Response response) {
                 try {
                     return response.body().string();
@@ -107,6 +189,7 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
 
 #end
 
+    // TODO onUnSubscribe to call.cancel();
     public static class OnSubscribeResponse implements Observable.OnSubscribe<Response> {
         final Request request;
         final OkHttpClient client;
