@@ -35,7 +35,33 @@ import java.util.List;
 
 public class MainTest {
     @Test
-    public void testUrl() {
+    public void testGetWithBaseUrl() {
+        GitHub github = GitHub.create();
+        List<String> contributors = github.contributors("yongjhih", "retrofit2").map(new Func1<Contributor, String>() {
+            @Override public String call(Contributor contributor) {
+                System.out.println(contributor.login());
+                return contributor.login();
+            }
+        }).toList().toBlocking().single();
+        assertTrue(contributors.contains("yongjhih"));
+        assertTrue(contributors.size() > 1);
+    }
+
+    @Test
+    public void testGetWithoutBaseUrl() {
+        GitHub github = GitHub.create();
+        List<String> contributors = github.contributorsWithoutBaseUrl("yongjhih", "retrofit2").map(new Func1<Contributor, String>() {
+            @Override public String call(Contributor contributor) {
+                System.out.println(contributor.login());
+                return contributor.login();
+            }
+        }).toList().toBlocking().single();
+        assertTrue(contributors.contains("yongjhih"));
+        assertTrue(contributors.size() > 1);
+    }
+
+    @Test
+    public void testGetWithUrl() {
         GitHub github = GitHub.create();
 
         List<String> contributors = github.contributorsDynamic("https://api.github.com/repos/yongjhih/retrofit2/contributors").map(new Func1<Contributor, String>() {
@@ -49,9 +75,10 @@ public class MainTest {
     }
 
     @Test
-    public void testWithoutBaseUrl() {
+    public void testPost() {
         GitHub github = GitHub.create();
-        List<String> contributors = github.contributorsWithoutBaseUrl("yongjhih", "retrofit2").map(new Func1<Contributor, String>() {
+
+        List<String> contributors = github.contributorsDynamic("https://api.github.com/repos/yongjhih/retrofit2/contributors").map(new Func1<Contributor, String>() {
             @Override public String call(Contributor contributor) {
                 System.out.println(contributor.login());
                 return contributor.login();
@@ -60,17 +87,42 @@ public class MainTest {
         assertTrue(contributors.contains("yongjhih"));
         assertTrue(contributors.size() > 1);
     }
+    @Test
+    public void testDelete() {
+    }
+    @Test
+    public void testPut() {
+    }
 
     @Test
-    public void testBaseUrl() {
-        GitHub github = GitHub.create();
-        List<String> contributors = github.contributors("yongjhih", "retrofit2").map(new Func1<Contributor, String>() {
-            @Override public String call(Contributor contributor) {
-                System.out.println(contributor.login());
-                return contributor.login();
-            }
-        }).toList().toBlocking().single();
-        assertTrue(contributors.contains("yongjhih"));
-        assertTrue(contributors.size() > 1);
+    public void testGetFile() {
+    }
+    @Test
+    public void testPostFile() {
+    }
+    @Test
+    public void testPostPart() {
+    }
+    @Test
+    public void testGetWithHeader() {
+    }
+    @Test
+    public void testGetWithInterception() {
+    }
+
+    @Test
+    public void testGson() {
+    }
+    @Test
+    public void testJackson() {
+    }
+    @Test
+    public void testMoshi() {
+    }
+    @Test
+    public void testLoganSquare() {
+    }
+    @Test
+    public void testAutoJson() {
     }
 }
