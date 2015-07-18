@@ -15,13 +15,13 @@ public abstract class GitHub {
             @Path("owner") String owner,
             @Path("repo") String repo);
 
-    @GET("https://api2.github.com/repos/{owner}/{repo}/contributors")
-    public abstract Observable<Contributor> contributors2(
+    @GET("https://api.github.com/repos/{owner}/{repo}/contributors")
+    public abstract Observable<Contributor> contributorsWithoutBaseUrl(
             @Path("owner") String owner,
             @Path("repo") String repo);
 
-    @GET("{owner}")
-    public abstract Observable<Contributor> contributorsDynamic( @Path("owner") String owner);
+    @GET("{url}")
+    public abstract Observable<Contributor> contributorsDynamic(@Path("url") String url);
 
     public static GitHub create() {
         return new Retrofit_GitHub();

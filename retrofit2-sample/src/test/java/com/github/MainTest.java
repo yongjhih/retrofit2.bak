@@ -31,26 +31,46 @@ import com.github.*;
 import rx.Observable;
 import rx.functions.*;
 import java.util.Arrays;
+import java.util.List;
 
 public class MainTest {
     @Test
-    public void testContributors() {
+    public void testUrl() {
         GitHub github = GitHub.create();
-        github.contributors("yongjhih", "retrofit2").forEach(new Action1<Contributor>() {
-            @Override public void call(Contributor contributor) {
-                System.out.println("retrofit2" + ":" + "contributor:" + contributor.login());
+
+        List<String> contributors = github.contributorsDynamic("https://api.github.com/repos/yongjhih/retrofit2/contributors").map(new Func1<Contributor, String>() {
+            @Override public String call(Contributor contributor) {
+                System.out.println(contributor.login());
+                return contributor.login();
             }
-        }, new Action1<Throwable>() {
-            @Override public void call(Throwable e) {
-                System.out.println("retrofit2" + ":" + "e:" + e);
-                System.out.println("retrofit2" + ":" + "e.stack:" + Arrays.deepToString(e.getStackTrace()));
-                throw new RuntimeException(e);
+        }).toList().toBlocking().single();
+        assertTrue(contributors.contains("yongjhih"));
+        assertTrue(contributors.size() > 1);
+    }
+
+    @Test
+    public void testWithoutBaseUrl() {
+        GitHub github = GitHub.create();
+        List<String> contributors = github.contributorsWithoutBaseUrl("yongjhih", "retrofit2").map(new Func1<Contributor, String>() {
+            @Override public String call(Contributor contributor) {
+                System.out.println(contributor.login());
+                return contributor.login();
             }
-        });
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-        }
-        assertTrue(true);
+        }).toList().toBlocking().single();
+        assertTrue(contributors.contains("yongjhih"));
+        assertTrue(contributors.size() > 1);
+    }
+
+    @Test
+    public void testBaseUrl() {
+        GitHub github = GitHub.create();
+        List<String> contributors = github.contributors("yongjhih", "retrofit2").map(new Func1<Contributor, String>() {
+            @Override public String call(Contributor contributor) {
+                System.out.println(contributor.login());
+                return contributor.login();
+            }
+        }).toList().toBlocking().single();
+        assertTrue(contributors.contains("yongjhih"));
+        assertTrue(contributors.size() > 1);
     }
 }
