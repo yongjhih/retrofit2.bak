@@ -765,7 +765,7 @@ public class RetrofitProcessor extends AbstractProcessor {
     vars.actualTypes = TypeSimplifier.actualTypeParametersString(type);
     vars.wildcardTypes = wildcardTypeParametersString(type);
     retrofit.Retrofit typeAnnoation = type.getAnnotation(retrofit.Retrofit.class);
-    vars.endpoint = typeAnnoation.value();
+    vars.baseUrl = typeAnnoation.value();
 
     TypeElement parcelable = processingEnv.getElementUtils().getTypeElement("android.os.Parcelable");
     vars.parcelable = parcelable != null

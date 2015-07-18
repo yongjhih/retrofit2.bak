@@ -24,7 +24,10 @@ import java.util.List;
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
 public @interface Retrofit {
-  String value();
+  /**
+   * baseUrl
+   */
+  String value() default "";
 
   @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
   @Target(ElementType.TYPE)
@@ -45,7 +48,7 @@ public @interface Retrofit {
   @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
   @Target(ElementType.METHOD)
   public @interface GET {
-    String value();
+    String value() default "";
     String[] permissions() default {};
   }
 
@@ -59,7 +62,7 @@ public @interface Retrofit {
   @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
   @Target(ElementType.METHOD)
   public @interface DELETE {
-    String value();
+    String value() default "";
     String[] permissions() default {};
   }
 

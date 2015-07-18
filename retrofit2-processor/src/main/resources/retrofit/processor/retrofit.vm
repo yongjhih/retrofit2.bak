@@ -50,7 +50,12 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
 
     @Override
     ${p.access}${p.type} ${p.getter}(${p.args}) {
-        return Observable.create(new OnSubscribeResponse(client, new Request.Builder().url("${endpoint}${p.path}").build())).map(new Func1<Response, String>() {
+// if ($p.path.matches("^http://") || $p.path.matches("^https://"))
+        String url = "${p.path}";
+        if (!url.startsWith("http://") || !url.startsWith("https://")) {
+            url = "${baseUrl}" + url;
+        }
+        return Observable.create(new OnSubscribeResponse(client, new Request.Builder().url(url).build())).map(new Func1<Response, String>() {
             @Override public String call(Response response) {
                 try {
                     return response.body().string();

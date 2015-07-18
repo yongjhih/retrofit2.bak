@@ -134,7 +134,7 @@ class RetrofitTemplateVars extends TemplateVars {
    */
   List<String> toBuilderMethods;
 
-  String endpoint = "";
+  String baseUrl = "";
 
   /**
    * The simple names of validation methods (marked {@code @Retrofit.Validate}) in the Retrofit
