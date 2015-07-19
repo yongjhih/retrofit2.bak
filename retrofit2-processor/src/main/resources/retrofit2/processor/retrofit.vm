@@ -164,7 +164,7 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
 
     #foreach ($header in $p.headers.entrySet())
 
-        requestBuilder.addHeader("$header.key", "$header.value");
+        requestBuilder.addHeader("$header.key", $header.value);
 
     #end
 

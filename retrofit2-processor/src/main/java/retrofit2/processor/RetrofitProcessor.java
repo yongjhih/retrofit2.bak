@@ -360,7 +360,7 @@ public class RetrofitProcessor extends AbstractProcessor {
       String[] headers = arrayAnnotation.value();
       for (String header : headers) {
         String[] tokens = header.split(":");
-        map.put(tokens[0].trim(), tokens[1].trim());
+        map.put(tokens[0].trim(), "\"" + tokens[1].trim() + "\"");
       }
 
       List<? extends VariableElement> parameters = method.getParameters();
