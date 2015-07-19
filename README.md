@@ -22,7 +22,7 @@ public abstract class GitHub {
 GitHub github = GitHub.create();
 ```
 
-Each call on the generated GitHubService makes an HTTP request to the remote webserver.
+Each call on the generated instance of GitHub makes an HTTP request to the remote webserver.
 
 ```java
 github.repos("octocat").forEach(System.out::println);
