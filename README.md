@@ -36,7 +36,16 @@ Use annotations to describe the HTTP request:
 
 ## TODO
 
-* Custom converter
+* Support custom converter: `GsonConveter`, `JacksonConverter`, `MoshiConveter`, `LoganSquareConverter`, `AutoJsonConverter`
+
+```java
+Gson gson = new GsonBuilder()
+      .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)		
+      .registerTypeAdapter(Date.class, new DateTypeAdapter())		
+      .create();
+
+GitHub github = GitHub.create(new GsonConverter(gson));
+```
 
 ## Development
 
