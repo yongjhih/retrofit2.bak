@@ -43,9 +43,10 @@ dependencies {
     }
 }
 
-//test {
-    //testLogging {
-        //events "passed", "skipped", "failed", "standardOut", "standardError"
-    //}
-    //testLogging.showStandardStreams = true
-//}
+tasks.withType(Test) {
+    testLogging {
+        exceptionFormat "full"
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+        showStandardStreams = true
+    }
+}

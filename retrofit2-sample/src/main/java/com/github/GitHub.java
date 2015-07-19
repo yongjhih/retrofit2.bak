@@ -1,7 +1,7 @@
 package com.github;
 
-import retrofit.Retrofit;
-import retrofit.Retrofit.*;
+import retrofit2.Retrofit;
+import retrofit2.Retrofit.*;
 
 import auto.json.AutoJson;
 

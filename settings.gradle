@@ -1,2 +1,3 @@
-include 'retrofit2', 'retrofit2-processor', ':retrofit2-sample'
+include 'retrofit2', 'retrofit2-processor'
+include 'retrofit2-sample'
 rootProject.name = 'retrofit2-parent'
