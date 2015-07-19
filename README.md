@@ -40,8 +40,8 @@ Use annotations to describe the HTTP request:
 
 ```java
 Gson gson = new GsonBuilder()
-      .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)		
-      .registerTypeAdapter(Date.class, new DateTypeAdapter())		
+      .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+      .registerTypeAdapter(Date.class, new DateTypeAdapter())
       .create();
 
 GitHub github = GitHub.create(new GsonConverter(gson));
