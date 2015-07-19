@@ -305,35 +305,35 @@ public class RetrofitProcessor extends AbstractProcessor {
 
     public boolean buildIsGet(ExecutableElement method) {
         // TODO duplicated routine
-        return method.getAnnotation(retrofit2.Retrofit.GET.class) != null;
+        return method.getAnnotation(Retrofit.GET.class) != null;
     }
 
     public boolean buildIsPost(ExecutableElement method) {
         // TODO duplicated routine
-        return method.getAnnotation(retrofit2.Retrofit.POST.class) != null;
+        return method.getAnnotation(Retrofit.POST.class) != null;
     }
 
     public boolean buildIsPut(ExecutableElement method) {
         // TODO duplicated routine
-        return method.getAnnotation(retrofit2.Retrofit.PUT.class) != null;
+        return method.getAnnotation(Retrofit.PUT.class) != null;
     }
 
     public boolean buildIsDelete(ExecutableElement method) {
         // TODO duplicated routine
-        return method.getAnnotation(retrofit2.Retrofit.DELETE.class) != null;
+        return method.getAnnotation(Retrofit.DELETE.class) != null;
     }
 
     public String buildBody(ExecutableElement method) {
       String body = "";
 
       // TODO duplicated routine
-      retrofit2.Retrofit.POST post = method.getAnnotation(retrofit2.Retrofit.POST.class);
+      Retrofit.POST post = method.getAnnotation(Retrofit.POST.class);
       if (post == null) return body;
 
       // TODO duplicated code
       List<? extends VariableElement> parameters = method.getParameters();
       for (VariableElement parameter : parameters) {
-        if (parameter.getAnnotation(retrofit2.Retrofit.Body.class) != null) {
+        if (parameter.getAnnotation(Retrofit.Body.class) != null) {
           body = parameter.getSimpleName().toString();
         }
       }
@@ -341,10 +341,10 @@ public class RetrofitProcessor extends AbstractProcessor {
     }
 
     public List<String> buildPermissions(ExecutableElement method) {
-      retrofit2.Retrofit.GET get = method.getAnnotation(retrofit2.Retrofit.GET.class);
-      retrofit2.Retrofit.PUT put = method.getAnnotation(retrofit2.Retrofit.PUT.class);
-      retrofit2.Retrofit.POST post = method.getAnnotation(retrofit2.Retrofit.POST.class);
-      retrofit2.Retrofit.DELETE delete = method.getAnnotation(retrofit2.Retrofit.DELETE.class);
+      Retrofit.GET get = method.getAnnotation(Retrofit.GET.class);
+      Retrofit.PUT put = method.getAnnotation(Retrofit.PUT.class);
+      Retrofit.POST post = method.getAnnotation(Retrofit.POST.class);
+      Retrofit.DELETE delete = method.getAnnotation(Retrofit.DELETE.class);
       if (get != null) return Arrays.asList(get.permissions());
       if (put != null) return Arrays.asList(put.permissions());
       if (post != null) return Arrays.asList(post.permissions());
@@ -354,7 +354,7 @@ public class RetrofitProcessor extends AbstractProcessor {
 
     public Map<String, String> buildHeaders(ExecutableElement method) {
       Map<String, String> map = new HashMap<String, String>();
-      retrofit2.Retrofit.Headers arrayAnnotation = method.getAnnotation(retrofit2.Retrofit.Headers.class);
+      Retrofit.Headers arrayAnnotation = method.getAnnotation(Retrofit.Headers.class);
       if (arrayAnnotation == null) return Collections.emptyMap();
 
       String[] headers = arrayAnnotation.value();
@@ -365,8 +365,8 @@ public class RetrofitProcessor extends AbstractProcessor {
 
       List<? extends VariableElement> parameters = method.getParameters();
       for (VariableElement parameter : parameters) {
-        retrofit2.Retrofit.Header header = parameter
-          .getAnnotation(retrofit2.Retrofit.Header.class);
+        Retrofit.Header header = parameter
+          .getAnnotation(Retrofit.Header.class);
         if (header == null) continue;
 
         String key = header.value().equals("") ? parameter.getSimpleName().toString() : header.value();
@@ -382,8 +382,8 @@ public class RetrofitProcessor extends AbstractProcessor {
 
       List<? extends VariableElement> parameters = method.getParameters();
       for (VariableElement parameter : parameters) {
-        retrofit2.Retrofit.Field field = parameter
-          .getAnnotation(retrofit2.Retrofit.Field.class);
+        Retrofit.Field field = parameter
+          .getAnnotation(Retrofit.Field.class);
         if (field == null) continue;
 
         String key = field.value().equals("") ? parameter.getSimpleName().toString() : field.value();
@@ -398,8 +398,8 @@ public class RetrofitProcessor extends AbstractProcessor {
 
       List<? extends VariableElement> parameters = method.getParameters();
       for (VariableElement parameter : parameters) {
-        retrofit2.Retrofit.Part part = parameter
-          .getAnnotation(retrofit2.Retrofit.Part.class);
+        Retrofit.Part part = parameter
+          .getAnnotation(Retrofit.Part.class);
         if (part == null) continue;
 
         String key = part.value().equals("") ? parameter.getSimpleName().toString() : part.value();
@@ -417,8 +417,8 @@ public class RetrofitProcessor extends AbstractProcessor {
 
       List<? extends VariableElement> parameters = method.getParameters();
       for (VariableElement parameter : parameters) {
-        retrofit2.Retrofit.Path path = parameter
-            .getAnnotation(retrofit2.Retrofit.Path.class);
+        Retrofit.Path path = parameter
+            .getAnnotation(Retrofit.Path.class);
         if ((path != null) && (!path.value().equals(""))) {
           fullPath = fullPath.replace("{" + path.value() + "}", "\" + " +
               parameter.getSimpleName().toString() + " + \"");
@@ -433,10 +433,10 @@ public class RetrofitProcessor extends AbstractProcessor {
 
     public String buildRawPath(ExecutableElement method) {
       // TODO duplicated routine
-      retrofit2.Retrofit.GET get = method.getAnnotation(retrofit2.Retrofit.GET.class);
-      retrofit2.Retrofit.PUT put = method.getAnnotation(retrofit2.Retrofit.PUT.class);
-      retrofit2.Retrofit.POST post = method.getAnnotation(retrofit2.Retrofit.POST.class);
-      retrofit2.Retrofit.DELETE delete = method.getAnnotation(retrofit2.Retrofit.DELETE.class);
+      Retrofit.GET get = method.getAnnotation(Retrofit.GET.class);
+      Retrofit.PUT put = method.getAnnotation(Retrofit.PUT.class);
+      Retrofit.POST post = method.getAnnotation(Retrofit.POST.class);
+      Retrofit.DELETE delete = method.getAnnotation(Retrofit.DELETE.class);
       String rawPath = null;
       if (get != null) rawPath = get.value();
       if (put != null) rawPath = put.value();
@@ -460,7 +460,7 @@ public class RetrofitProcessor extends AbstractProcessor {
 
       List<? extends VariableElement> parameters = method.getParameters();
       for (VariableElement parameter : parameters) {
-        retrofit2.Retrofit.Query query = parameter.getAnnotation(retrofit2.Retrofit.Query.class);
+        Retrofit.Query query = parameter.getAnnotation(Retrofit.Query.class);
         if (query == null) continue;
 
         String key = query.value().equals("") ? parameter.getSimpleName().toString() : query.value();
@@ -474,8 +474,8 @@ public class RetrofitProcessor extends AbstractProcessor {
       List<String> queryMaps = new ArrayList<String>();
       List<? extends VariableElement> parameters = method.getParameters();
       for (VariableElement parameter : parameters) {
-        retrofit2.Retrofit.QueryMap queryMap = parameter
-            .getAnnotation(retrofit2.Retrofit.QueryMap.class);
+        Retrofit.QueryMap queryMap = parameter
+            .getAnnotation(Retrofit.QueryMap.class);
         if (queryMap == null) {
           continue;
         }
@@ -489,8 +489,8 @@ public class RetrofitProcessor extends AbstractProcessor {
       List<String> queryBundles = new ArrayList<String>();
       List<? extends VariableElement> parameters = method.getParameters();
       for (VariableElement parameter : parameters) {
-        retrofit2.Retrofit.QueryBundle queryBundle = parameter
-            .getAnnotation(retrofit2.Retrofit.QueryBundle.class);
+        Retrofit.QueryBundle queryBundle = parameter
+            .getAnnotation(Retrofit.QueryBundle.class);
         if (queryBundle == null) {
           continue;
         }
@@ -761,7 +761,7 @@ public class RetrofitProcessor extends AbstractProcessor {
         }
         if (!alreadySeen) {
           /*
-          retrofit2.Retrofit.GET action = method.getAnnotation(retrofit2.Retrofit.GET.class);
+          Retrofit.GET action = method.getAnnotation(Retrofit.GET.class);
           System.out.printf(
               "%s Action value = %s\n",
               method.getSimpleName(),
@@ -861,7 +861,7 @@ public class RetrofitProcessor extends AbstractProcessor {
     vars.formalTypes = typeSimplifier.formalTypeParametersString(type);
     vars.actualTypes = TypeSimplifier.actualTypeParametersString(type);
     vars.wildcardTypes = wildcardTypeParametersString(type);
-    retrofit2.Retrofit typeAnnoation = type.getAnnotation(retrofit2.Retrofit.class);
+    Retrofit typeAnnoation = type.getAnnotation(Retrofit.class);
     vars.baseUrl = typeAnnoation.value();
 
     TypeElement parcelable = processingEnv.getElementUtils().getTypeElement("android.os.Parcelable");
