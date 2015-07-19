@@ -53,6 +53,24 @@ public abstract class GitHub {
     @GET("/user")
     public abstract Observable<Contributor> getUserWithAuthorization(@Header("Authorization") String authorization);
 
+    @Headers({
+        "Accept: application/vnd.github.v3.full+json",
+        "User-Agent: Retrofit2"
+    })
+    @PUT("/user/starred/{owner}/{repo}")
+    public abstract Observable<Contributor> star(@Query("access_token") String accessToken,
+        @Path("owner") String owner,
+        @Path("repo") String repo);
+
+    @Headers({
+        "Accept: application/vnd.github.v3.full+json",
+        "User-Agent: Retrofit2"
+    })
+    @DELETE("/user/starred/{owner}/{repo}")
+    public abstract Observable<Contributor> unstar(@Query("access_token") String accessToken,
+        @Path("owner") String owner,
+        @Path("repo") String repo);
+
     public static GitHub create() {
         return new Retrofit_GitHub();
     }

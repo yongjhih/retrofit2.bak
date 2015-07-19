@@ -125,4 +125,28 @@ public class MainTest {
     @Test
     public void testAutoJson() {
     }
+
+    /*
+    @Test
+    public void testStar() {
+        GitHub github = GitHub.create();
+        List<String> contributors = github.star("YOUR_TOKEN_HERE", "yongjhih", "retrofit2").map(new Func1<Contributor, String>() {
+            @Override public String call(Contributor contributor) {
+                System.out.println(contributor.login());
+                return contributor.login();
+            }
+        }).toList().toBlocking().single();
+    }
+
+    @Test
+    public void testUnstar() {
+        GitHub github = GitHub.create();
+        List<String> contributors = github.unstar("YOUR_TOKEN_HERE", "yongjhih", "retrofit2").map(new Func1<Contributor, String>() {
+            @Override public String call(Contributor contributor) {
+                System.out.println(contributor.login());
+                return contributor.login();
+            }
+        }).toList().toBlocking().single();
+    }
+    */
 }

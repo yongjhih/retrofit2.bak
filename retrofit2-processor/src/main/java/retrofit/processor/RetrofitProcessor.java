@@ -460,13 +460,11 @@ public class RetrofitProcessor extends AbstractProcessor {
 
       List<? extends VariableElement> parameters = method.getParameters();
       for (VariableElement parameter : parameters) {
-        retrofit.Retrofit.Query query = parameter
-          .getAnnotation(retrofit.Retrofit.Query.class);
-        if (query == null) {
-          continue;
-        }
+        retrofit.Retrofit.Query query = parameter.getAnnotation(retrofit.Retrofit.Query.class);
+        if (query == null) continue;
 
         String key = query.value().equals("") ? parameter.getSimpleName().toString() : query.value();
+        map.put(key, parameter.getSimpleName().toString());
       }
 
       return map;

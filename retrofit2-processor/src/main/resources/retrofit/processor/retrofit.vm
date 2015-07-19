@@ -73,7 +73,32 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
             _url = "${baseUrl}" + _url;
         }
 
+    #if (!$p.queries.isEmpty())
+
+        StringBuilder _sb = new StringBuilder();
+        _sb.append(_url);
+        _sb.append("?");
+
+        #foreach ($query in $p.queries.entrySet())
+
+        _sb.append("${query.key}");
+        _sb.append("=");
+        _sb.append($query.value);
+
+            #if ($foreach.hasNext)
+
+        _sb.append("&");
+
+            #end
+        #end
+
+        Request.Builder requestBuilder = new Request.Builder().url(_sb.toString());
+
+    #else
+
         Request.Builder requestBuilder = new Request.Builder().url(_url);
+
+    #end
 
     #if ($p.get)
 
@@ -108,7 +133,6 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
         MultipartBuilder partsBuilder = new MultipartBuilder().type(MultipartBuilder.FORM);
 
             #foreach ($part in $p.parts.entrySet())
-
                 #if ($part.value.type == "")
 
         partsBuilder.addPart(
@@ -126,7 +150,12 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
 
         requestBuilder.put(partsBuilder.build());
 
+        #else
+
+        requestBuilder.put(RequestBody.create(MediaType.parse(_MIME_APP_JSON_CHARSET_UTF8), ""));
+
         #end
+
     #elseif ($p.delete)
 
         requestBuilder.delete();
