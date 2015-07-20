@@ -3,8 +3,14 @@ apply plugin: 'java'
 targetCompatibility = '1.6'
 sourceCompatibility = '1.6'
 
+repositories {
+    jcenter()
+    maven { url "https://jitpack.io" }
+}
+
 dependencies {
-    compile project(':retrofit-converters:logansquare')
+    //compile project(':retrofit-converters:logansquare')
+    compile 'com.github.yongjhih:converter-logansquare-retrofit:-SNAPSHOT'
 }
 
 tasks.withType(Test) {
