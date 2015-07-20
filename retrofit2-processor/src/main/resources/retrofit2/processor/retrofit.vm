@@ -39,7 +39,8 @@ import retrofit.mime.*;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+//import com.google.gson.reflect.TypeToken;
+import retrofit2.TypeToken;
 
 /**
  * @see "https://github.com/square/okhttp/wiki/Recipes"
@@ -71,8 +72,8 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
                  * mapper.readValue(jsonString, typeFactory.constructCollectionType(List.class, SomeClass.class));
                  */
 
-                //this.converter = new JacksonConverter();
-                this.converter = new GsonConverter(new Gson());
+                this.converter = new JacksonConverter();
+                //this.converter = new GsonConverter(new Gson());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
