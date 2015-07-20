@@ -34,9 +34,9 @@ Use annotations to describe the HTTP request:
 * Object conversion to request body (e.g., JSON, protocol buffers)
 * Multipart request body and file upload
 
-## TODO
+## Support Converter
 
-* Support custom converter: `GsonConveter`, `JacksonConverter`, `MoshiConveter`, `LoganSquareConverter`, `AutoJsonConverter`
+* Support custom converter: `GsonConveter`, `JacksonConverter`, `MoshiConveter`, `LoganSquareConverter`, etc.
 
 ```java
 Gson gson = new GsonBuilder()
@@ -45,6 +45,21 @@ Gson gson = new GsonBuilder()
       .create();
 
 GitHub github = GitHub.create(new GsonConverter(gson));
+```
+
+## Installation
+
+```java
+repositories {
+    jcenter()
+    mavne { url "https://jitpack.io" }
+}
+
+dependencies {
+    compile 'com.github.yongjhih:retrofit2:-SNAPSHOT'
+    compile 'com.squareup.retrofit:retrofit:1.9.0'
+    compile 'com.github.yongjhih:converter-logansquare-retrofit:-SNAPSHOT'
+}
 ```
 
 ## Development
