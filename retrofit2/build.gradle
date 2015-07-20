@@ -9,8 +9,8 @@ repositories {
 }
 
 dependencies {
-    //compile project(':retrofit-converters:logansquare')
-    compile 'com.github.yongjhih:converter-logansquare-retrofit:-SNAPSHOT'
+    //compile 'com.github.yongjhih:converter-logansquare-retrofit:-SNAPSHOT'
+    compile 'com.github.yongjhih:converter-logansquare-retrofit:014829f586'
 }
 
 tasks.withType(Test) {
