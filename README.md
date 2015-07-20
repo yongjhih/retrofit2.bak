@@ -57,8 +57,7 @@ repositories {
 
 dependencies {
     compile 'com.github.yongjhih:retrofit2:-SNAPSHOT'
-    compile 'com.squareup.retrofit:retrofit:1.9.0'
-    compile 'com.github.yongjhih:converter-logansquare-retrofit:-SNAPSHOT'
+    apt 'com.github.yongjhih:retrofit2-processor:-SNAPSHOT'
 }
 ```
 
