@@ -10,7 +10,7 @@ Inspired by retrofit, compile-time version.
 @Retrofit("https://api.github.com")
 public abstract class GitHub {
   @GET("/users/{user}/repos")
-  Observable<Repo> repos(@Path("user") String user);
+  public abstract Observable<Repo> repos(@Path("user") String user);
   
   public static GitHub create() {
     return new Retrofit_GitHub();
