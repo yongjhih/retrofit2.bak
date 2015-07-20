@@ -1,23 +1,17 @@
 package com.github;
 
-import retrofit2.Retrofit;
-import retrofit2.Retrofit.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import auto.json.AutoJson;
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class Contributor {
+    public String login;
+    public int contributions;
 
-import rx.Observable;
-import android.support.annotation.Nullable;
+    public Contributor() {
+    }
 
-@AutoJson
-public abstract class Contributor {
-    @Nullable
-    @AutoJson.Field
-    public abstract String login();
-    @Nullable
-    @AutoJson.Field
-    public abstract int contributions();
-
-    public static Contributor create() {
-        return new AutoJson_Contributor();
+    public Contributor(String login, int contributions) {
+        this.login = login;
+        this.contributions = contributions;
     }
 }

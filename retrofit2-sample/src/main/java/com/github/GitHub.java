@@ -3,26 +3,56 @@ package com.github;
 import retrofit2.Retrofit;
 import retrofit2.Retrofit.*;
 
-import auto.json.AutoJson;
 
 import rx.Observable;
-import android.support.annotation.Nullable;
 import java.io.File;
+
+import retrofit.converter.*;
+import java.util.List;
+import rx.functions.*;
 
 @Retrofit("https://api.github.com")
 public abstract class GitHub {
     @GET("/repos/{owner}/{repo}/contributors")
-    public abstract Observable<Contributor> contributors(
+    public abstract Observable<List<Contributor>> contributorList(
             @Path("owner") String owner,
             @Path("repo") String repo);
+
+    public Observable<Contributor> contributors(
+            String owner,
+            String repo) {
+        return contributorList(owner, repo).flatMap(new Func1<List<Contributor>, Observable<Contributor>>() {
+            @Override public Observable<Contributor> call(List<Contributor> list) {
+                return Observable.from(list);
+            }
+        });
+    }
 
     @GET("https://api.github.com/repos/{owner}/{repo}/contributors")
-    public abstract Observable<Contributor> contributorsWithoutBaseUrl(
+    public abstract Observable<List<Contributor>> contributorListWithoutBaseUrl(
             @Path("owner") String owner,
             @Path("repo") String repo);
 
+    public Observable<Contributor> contributorsWithoutBaseUrl(
+            String owner,
+            String repo) {
+        return contributorListWithoutBaseUrl(owner, repo).flatMap(new Func1<List<Contributor>, Observable<Contributor>>() {
+            @Override public Observable<Contributor> call(List<Contributor> list) {
+                return Observable.from(list);
+            }
+        });
+    }
+
     @GET("{url}")
-    public abstract Observable<Contributor> contributorsDynamic(@Path("url") String url);
+    public abstract Observable<List<Contributor>> contributorListDynamic(@Path("url") String url);
+
+    public Observable<Contributor> contributorsDynamic(String url) {
+        return contributorListDynamic(url).flatMap(new Func1<List<Contributor>, Observable<Contributor>>() {
+            @Override public Observable<Contributor> call(List<Contributor> list) {
+                return Observable.from(list);
+            }
+        });
+    }
 
     @POST("/user/edit")
     public abstract Observable<Contributor> updateUser(@Body Contributor user);
@@ -73,5 +103,19 @@ public abstract class GitHub {
 
     public static GitHub create() {
         return new Retrofit_GitHub();
+    }
+
+    public static GitHub create(Converter converter) {
+        //if (converter == null) {
+        //    /*
+        //    Gson gson = new GsonBuilder()
+        //        .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+        //        //.registerTypeAdapter(Date.class, new DateTypeAdapter())
+        //        .create();
+        //    converter = new GsonConverter(gson);
+        //    */
+        //    converter = new JacksonConverter();
+        //}
+        return new Retrofit_GitHub(converter);
     }
 }

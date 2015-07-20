@@ -13,7 +13,7 @@ public class DetailActivity extends Activity {
         GitHub github = GitHub.create();
         github.contributors("yongjhih", "retrofit2").forEach(new Action1<Contributor>() {
             @Override public void call(Contributor contributor) {
-                android.util.Log.d("retrofit2", contributor.login());
+                android.util.Log.d("retrofit2", contributor.login);
             }
         });
     }

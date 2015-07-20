@@ -214,6 +214,7 @@ public class RetrofitProcessor extends AbstractProcessor {
     private final ExecutableElement method;
     private final String type;
     private String typeArgs;
+    private String typeArgs2;
     private final ImmutableList<String> annotations;
     private final String args;
     private final String path;
@@ -251,7 +252,8 @@ public class RetrofitProcessor extends AbstractProcessor {
       this.annotations = buildAnnotations(typeSimplifier);
       this.args = formalTypeArgsString(method);
       this.path = buildPath(method);
-      this.typeArgs = buildTypeArguments(type);
+      this.typeArgs = buildTypeArguments(type); // Observable<List<String>> -> List<String>
+      this.typeArgs2 = buildTypeArguments(typeArgs); // Observable<List<String>> -> String
       this.queries = buildQueries(method);
       this.queryMaps = buildQueryMaps(method);
       this.queryBundles = buildQueryBundles(method);
@@ -270,12 +272,11 @@ public class RetrofitProcessor extends AbstractProcessor {
     }
 
     private String buildTypeArguments(String type) {
-      Pattern pattern = Pattern.compile( "<(.*?)>" );
+      Pattern pattern = Pattern.compile( "<(.*)>" );
       Matcher m = pattern.matcher(type);
       if (m.find()) return m.group(1);
       return "";
     }
-
 
     public String buildCallbackArg(ExecutableElement method) {
         return "callback"; // TODO
@@ -562,6 +563,10 @@ public class RetrofitProcessor extends AbstractProcessor {
 
     public String getTypeArgs() {
       return typeArgs;
+    }
+
+    public String getTypeArgs2() {
+      return typeArgs2;
     }
 
     public TypeKind getKind() {

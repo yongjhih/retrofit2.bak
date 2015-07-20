@@ -39,8 +39,8 @@ public class MainTest {
         GitHub github = GitHub.create();
         List<String> contributors = github.contributors("yongjhih", "retrofit2").map(new Func1<Contributor, String>() {
             @Override public String call(Contributor contributor) {
-                System.out.println(contributor.login());
-                return contributor.login();
+                System.out.println(contributor.login);
+                return contributor.login;
             }
         }).toList().toBlocking().single();
         assertTrue(contributors.contains("yongjhih"));
@@ -52,8 +52,8 @@ public class MainTest {
         GitHub github = GitHub.create();
         List<String> contributors = github.contributorsWithoutBaseUrl("yongjhih", "retrofit2").map(new Func1<Contributor, String>() {
             @Override public String call(Contributor contributor) {
-                System.out.println(contributor.login());
-                return contributor.login();
+                System.out.println(contributor.login);
+                return contributor.login;
             }
         }).toList().toBlocking().single();
         assertTrue(contributors.contains("yongjhih"));
@@ -66,8 +66,8 @@ public class MainTest {
 
         List<String> contributors = github.contributorsDynamic("https://api.github.com/repos/yongjhih/retrofit2/contributors").map(new Func1<Contributor, String>() {
             @Override public String call(Contributor contributor) {
-                System.out.println(contributor.login());
-                return contributor.login();
+                System.out.println(contributor.login);
+                return contributor.login;
             }
         }).toList().toBlocking().single();
         assertTrue(contributors.contains("yongjhih"));
@@ -76,16 +76,6 @@ public class MainTest {
 
     @Test
     public void testPost() {
-        GitHub github = GitHub.create();
-
-        List<String> contributors = github.contributorsDynamic("https://api.github.com/repos/yongjhih/retrofit2/contributors").map(new Func1<Contributor, String>() {
-            @Override public String call(Contributor contributor) {
-                System.out.println(contributor.login());
-                return contributor.login();
-            }
-        }).toList().toBlocking().single();
-        assertTrue(contributors.contains("yongjhih"));
-        assertTrue(contributors.size() > 1);
     }
     @Test
     public void testDelete() {
@@ -132,8 +122,8 @@ public class MainTest {
         GitHub github = GitHub.create();
         List<String> contributors = github.star("YOUR_TOKEN_HERE", "yongjhih", "retrofit2").map(new Func1<Contributor, String>() {
             @Override public String call(Contributor contributor) {
-                System.out.println(contributor.login());
-                return contributor.login();
+                System.out.println(contributor.login);
+                return contributor.login;
             }
         }).toList().toBlocking().single();
     }
@@ -143,8 +133,8 @@ public class MainTest {
         GitHub github = GitHub.create();
         List<String> contributors = github.unstar("YOUR_TOKEN_HERE", "yongjhih", "retrofit2").map(new Func1<Contributor, String>() {
             @Override public String call(Contributor contributor) {
-                System.out.println(contributor.login());
-                return contributor.login();
+                System.out.println(contributor.login);
+                return contributor.login;
             }
         }).toList().toBlocking().single();
     }

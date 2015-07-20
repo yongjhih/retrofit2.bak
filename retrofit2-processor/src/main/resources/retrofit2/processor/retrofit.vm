@@ -29,9 +29,17 @@ import com.bluelinelabs.logansquare.LoganSquare;
 import android.util.Log;
 
 import java.util.List;
+import java.util.ArrayList;
 
 import com.squareup.okhttp.*;
 import java.io.IOException;
+import retrofit.converter.*;
+import java.io.*;
+import retrofit.mime.*;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 /**
  * @see "https://github.com/square/okhttp/wiki/Recipes"
@@ -43,11 +51,32 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
     public static final String _MIME_APP_JSON = "applications/json";
     public static final String _CHARSET_UTF8 = "charset=utf-8";
     public static final String _MIME_APP_JSON_CHARSET_UTF8 = _MIME_APP_JSON + "; " + _CHARSET_UTF8;
+    Converter converter;
 
 ## Constructor
 
     public $subclass() {
+        this(null);
+    }
+
+    public $subclass(Converter converter) {
         client = new OkHttpClient();
+
+        this.converter = converter;
+        if (this.converter == null) {
+            try {
+                /**
+                 * Parse JsonArray
+                 * gson.fromJson(jsonString, Wrapper[].class);
+                 * mapper.readValue(jsonString, typeFactory.constructCollectionType(List.class, SomeClass.class));
+                 */
+
+                //this.converter = new JacksonConverter();
+                this.converter = new GsonConverter(new Gson());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
 
         /*
         int cacheSize = 10 * 1024 * 1024; // 10 MiB
@@ -106,13 +135,15 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
         #if ($p.body && $p.body != "")
 
         String jsonString = null;
+        TypedOutput typedOutput = null;
         try {
-            jsonString = LoganSquare.serialize($p.body);
+            typedOutput = converter.toBody($p.body);
+            jsonString = toString(typedOutput);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
         //if (jsonString == null) throw new NullPointerException();
-        requestBuilder.post(RequestBody.create(MediaType.parse(_MIME_APP_JSON_CHARSET_UTF8), jsonString));
+        requestBuilder.post(RequestBody.create(MediaType.parse(typedOutput.mimeType()), jsonString));
 
         #elseif (!$p.fields.isEmpty())
 
@@ -180,34 +211,35 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
             @Override public Boolean call(String json) {
                 return json != null;
             }
-            /*
         }).map(new Func1<String, $p.typeArgs>() {
             @Override public $p.typeArgs call(String json) {
                 // TODO Using RetrofitConveter
                 try {
-                    return LoganSquare.parse(json, AutoJson_${p.typeArgs}.class);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            */
-        }).map(new Func1<String, List<? extends $p.typeArgs>>() {
-            @Override public List<? extends $p.typeArgs> call(String json) {
-                // TODO Using RetrofitConveter
-                try {
                     System.out.println(json);
-                    return LoganSquare.parseList(json, AutoJson_${p.typeArgs}.class);
+
+                    //TypeReference<${p.typeArgs}> ref = new TypeReference<>() {};
+                    //Type type = ((ParameterizedType) ref.getType()).getRawType();
+
+        #if ($p.typeArgs2 != "")
+
+                    //jsonMapper.readValue(jsonString, (Class<List<String>>) List.class);
+
+                    //Type type = new Array${p.typeArgs}().getClass().getGenericSuperclass();
+                    // return (${p.typeArgs}) converter.fromBody(new JsonTypedInput(json), (Class<${p.typeArgs}>) List.class);
+                    //Type type = new Array${p.typeArgs}().getClass().getGenericSuperclass();
+                    //Type type = new Array${p.typeArgs}().getClass();
+                    Type type = new TypeToken<${p.typeArgs}>(){}.getType();
+                    return (${p.typeArgs}) converter.fromBody(new JsonTypedInput(json), type);
+
+        #else
+
+                    return (${p.typeArgs}) converter.fromBody(new JsonTypedInput(json), ${p.typeArgs}.class);
+
+        #end
+
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
-            }
-        }).filter(new Func1<List<? extends $p.typeArgs>, Boolean>() {
-            @Override public Boolean call(List<? extends $p.typeArgs> list) {
-                return list != null;
-            }
-        }).flatMap(new Func1<List<? extends $p.typeArgs>, Observable<$p.typeArgs>>() {
-            @Override public Observable<$p.typeArgs> call(List<? extends $p.typeArgs> list) {
-                return Observable.from(list);
             }
         }).filter(new Func1<$p.typeArgs, Boolean>() {
             @Override public Boolean call($p.typeArgs object) {
@@ -246,4 +278,38 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
         }
     }
 
+    public static class JsonTypedInput implements TypedInput {
+        public static final String MIME_APP_JSON = "applications/json";
+        public static final String CHARSET_UTF8 = "charset=utf-8";
+        public static final String MIME_APP_JSON_CHARSET_UTF8 = MIME_APP_JSON + "; " + _CHARSET_UTF8;
+        private final byte[] bytes;
+        private final InputStream in;
+
+        public JsonTypedInput(String json) {
+            bytes = json.getBytes(); // json.getBytes(java.nio.charset.StandardCharsets.UTF_8.toString());
+            in = new ByteArrayInputStream(json.getBytes());
+        }
+
+        @Override public InputStream in() {
+            return in;
+        }
+        @Override public long length() {
+            return bytes.length;
+        }
+        @Override public String mimeType() {
+            return MIME_APP_JSON_CHARSET_UTF8;
+        }
+    }
+
+    public static String toString(TypedOutput typedOutput) {
+        String string = null;
+        try {
+            ByteArrayOutputStream bytesOutputStream = new ByteArrayOutputStream();
+            typedOutput.writeTo(bytesOutputStream);
+            string = bytesOutputStream.toString(); // bytesOutputStream.toString(java.nio.charset.StandardCharsets.UTF_8.toString());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return string;
+    }
 }
