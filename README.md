@@ -56,8 +56,8 @@ repositories {
 }
 
 dependencies {
-    compile 'com.github.yongjhih:retrofit2:-SNAPSHOT'
-    apt 'com.github.yongjhih:retrofit2-processor:-SNAPSHOT'
+    compile 'com.github.yongjhih.retrofit2:retrofit2:-SNAPSHOT'
+    apt 'com.github.yongjhih.retrofit2:retrofit2-processor:-SNAPSHOT'
 }
 ```
 
