@@ -3,13 +3,18 @@ apply plugin: 'java'
 targetCompatibility = '1.6'
 sourceCompatibility = '1.6'
 
-dependencies {
-    compile project(':retrofit-converters:logansquare')
-}
-
 tasks.withType(Test) {
   testLogging {
     exceptionFormat "full"
     events "passed", "skipped", "failed"
   }
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile 'com.squareup.retrofit:retrofit:1.9.0'
+    compile 'com.infstory:logansquare:1.1.1'
 }

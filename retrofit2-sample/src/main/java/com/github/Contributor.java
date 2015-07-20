@@ -2,10 +2,15 @@ package com.github;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.bluelinelabs.logansquare.annotation.JsonField;
+import com.bluelinelabs.logansquare.annotation.JsonObject;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonObject
 public class Contributor {
+    @JsonField
     public String login;
+    @JsonField
     public int contributions;
 
     //@JsonIgnore

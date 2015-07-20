@@ -72,8 +72,9 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
                  * mapper.readValue(jsonString, typeFactory.constructCollectionType(List.class, SomeClass.class));
                  */
 
-                this.converter = new JacksonConverter();
+                //this.converter = new JacksonConverter();
                 //this.converter = new GsonConverter(new Gson());
+                this.converter = new LoganSquareConverter();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

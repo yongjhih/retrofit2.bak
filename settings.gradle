@@ -1,3 +1,4 @@
 include 'retrofit2', 'retrofit2-processor'
+include 'retrofit-converters:logansquare'
 include 'retrofit2-sample'
 rootProject.name = 'retrofit2-parent'
