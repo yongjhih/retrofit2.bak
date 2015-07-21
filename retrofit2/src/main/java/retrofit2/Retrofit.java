@@ -20,6 +20,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import java.util.List;
+import rx.functions.*;
 
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
@@ -98,8 +99,10 @@ public @interface Retrofit {
   @Target({ElementType.METHOD, ElementType.TYPE})
   public @interface RetryHeaders { // For @Headers @GET|@PUT|@POST|@DELETE
     String[] value();
-    Class<? extends Throwable>[] exception() default Throwable.class;
-    int count();
+    Class<? extends Throwable>[] exceptions() default Throwable.class;
+    //Class<? extends ErrorHandler> errorHandler() default ErrorHandler.class;
+    //Class<? extends ErrorHandler> onRetry() default ErrorHandler.class;
+    //Class<? extends ErrorHandler> onNext() default ErrorHandler.class;
   }
 
   @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
@@ -146,6 +149,17 @@ public @interface Retrofit {
   @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
   @Target(ElementType.PARAMETER)
   public @interface QueryBundle {
+  }
+
+  @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
+  @Target({ElementType.TYPE, ElementType.METHOD})
+  public @interface QueryBinding {
+      String value() default "";
+      Class<? extends Bindable> binder() default Bindable.class;
+  }
+
+  public static interface Bindable<T> extends Func1<T, String> {
+      public String call(T t);
   }
 
   public static interface Callback<T> {

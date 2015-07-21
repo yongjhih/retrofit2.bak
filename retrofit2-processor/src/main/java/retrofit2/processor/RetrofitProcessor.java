@@ -700,6 +700,10 @@ public class RetrofitProcessor extends AbstractProcessor {
       return headers;
     }
 
+    public Map<String, String> getRetryHeaders() {
+      return Collections.emptyMap();
+    }
+
     public Map<String, String> getFields() {
       return fields;
     }

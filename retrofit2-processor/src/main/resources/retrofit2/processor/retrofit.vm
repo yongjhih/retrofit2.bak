@@ -226,6 +226,36 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
                     throw new RuntimeException(e);
                 }
             }
+
+        #if (!$p.retryHeaders.isEmpty())
+
+        }).onErrorResumeNext(new Func1<Throwable, Observable<String>>() {
+            @Override public Observable<String> call(Throwable e) {
+                if (e instanceof RequestException) {
+
+                    Request.Builder reqBuilder = RequestException.request().newBuilder();
+
+            #foreach ($header in $p.retryHeaders.entrySet())
+
+                    reqBuilder.addHeader("$header.key", $header.value);
+
+            #end
+
+                }
+
+                return Observable.create(new OnSubscribeResponse(client, reqBuilder.build())).map(new Func1<Response, String>() {
+                    @Override public String call(Response response) {
+                        try {
+                            return response.body().string();
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+            }
+
+        #end
+
         }).filter(new Func1<String, Boolean>() {
             @Override public Boolean call(String json) {
                 return json != null;

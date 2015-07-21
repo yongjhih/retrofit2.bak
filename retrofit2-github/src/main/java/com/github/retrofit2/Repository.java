@@ -21,7 +21,7 @@ import com.bluelinelabs.logansquare.annotation.JsonObject;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonObject
-public class Contributor {
+public class Repository {
     @JsonField
     public String login;
     @JsonField
@@ -31,10 +31,10 @@ public class Contributor {
     //public String login() {
         //return login();
     //}
-    public Contributor() {
+    public Repository() {
     }
 
-    public Contributor(String login, int contributions) {
+    public Repository(String login, int contributions) {
         this.login = login;
         this.contributions = contributions;
     }
