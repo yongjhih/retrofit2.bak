@@ -89,9 +89,17 @@ public @interface Retrofit {
   }
 
   @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
-  @Target(ElementType.METHOD)
-  public @interface Headers { // For @Headers @GET|@PUT|@POST|@DELETE
+  @Target({ElementType.METHOD, ElementType.TYPE})
+  public @interface Headers { // For @Headers @GET|@PUT|@POST|@DELETE, @Headers class Retrofit
     String[] value();
+  }
+
+  @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
+  @Target({ElementType.METHOD, ElementType.TYPE})
+  public @interface RetryHeaders { // For @Headers @GET|@PUT|@POST|@DELETE
+    String[] value();
+    Class<? extends Throwable>[] exception() default Throwable.class;
+    int count();
   }
 
   @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
