@@ -41,6 +41,7 @@ import java.lang.reflect.Type;
 import com.google.gson.Gson;
 //import com.google.gson.reflect.TypeToken;
 import retrofit2.TypeToken;
+import retrofit2.RequestException;
 
 /**
  * @see "https://github.com/square/okhttp/wiki/Recipes"
@@ -282,8 +283,8 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
         public void call(final Subscriber<? super Response> sub) {
             try {
                 client.newCall(request).enqueue(new Callback() {
-                    @Override public void onFailure(Request request, IOException e) {
-                        sub.onError(e);
+                    @Override public void onFailure(Request r, IOException e) {
+                        sub.onError(new RequestException(r, e));
                     }
                     @Override public void onResponse(Response response) {
                         sub.onNext(response);

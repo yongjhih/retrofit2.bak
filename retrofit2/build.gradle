@@ -11,6 +11,7 @@ repositories {
 dependencies {
     //compile 'com.github.yongjhih:converter-logansquare-retrofit:-SNAPSHOT'
     compile 'com.github.yongjhih:converter-logansquare-retrofit:014829f586'
+    compile 'com.squareup.okhttp:okhttp:2.4.0'
 }
 
 tasks.withType(Test) {
