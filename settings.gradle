@@ -1,3 +1,4 @@
 include 'retrofit2', 'retrofit2-processor'
-include 'retrofit2-sample'
+include 'retrofit2-github'
+include 'retrofit2-github-app'
 rootProject.name = 'retrofit2-parent'
