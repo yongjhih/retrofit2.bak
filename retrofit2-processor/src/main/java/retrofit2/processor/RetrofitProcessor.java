@@ -927,7 +927,6 @@ public class RetrofitProcessor extends AbstractProcessor {
   }
 
   private static boolean allGetters(Iterable<ExecutableElement> methods) {
-    if (true) return true;
     for (ExecutableElement method : methods) {
       String name = method.getSimpleName().toString();
       // TODO(user): decide whether getfoo() (without a capital) is a getter. Currently it is.
@@ -952,7 +951,7 @@ public class RetrofitProcessor extends AbstractProcessor {
   }
 
   private void checkDuplicateGetters(Map<ExecutableElement, String> methodToIdentifier) {
-      if (true) return;
+    if (true) return;
     Set<String> seen = Sets.newHashSet();
     for (Map.Entry<ExecutableElement, String> entry : methodToIdentifier.entrySet()) {
       if (!seen.add(entry.getValue())) {
