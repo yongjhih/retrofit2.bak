@@ -127,7 +127,7 @@ public @interface Retrofit {
   @Target(ElementType.PARAMETER)
   public @interface Part { // For @Multipart @PUT(@Part)
     String value() default "";
-    String type() default "text/plain; charset=UTF-8"; // "text/plain; charset=UTF-8"|"text/x-markdown; charset=utf-8"
+    String mimeType() default ""; // "text/plain"|"text/plain; charset=UTF-8"|"text/x-markdown; charset=utf-8"
   }
 
   @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor

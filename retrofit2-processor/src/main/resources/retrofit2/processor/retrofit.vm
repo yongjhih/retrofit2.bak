@@ -166,17 +166,33 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
         MultipartBuilder partsBuilder = new MultipartBuilder().type(MultipartBuilder.FORM);
 
             #foreach ($part in $p.parts.entrySet())
-                #if ($part.value.type == "")
+                #if ($part.value.typedFile)
 
-        partsBuilder.addPart(
-            Headers.of("Content-Disposition", "form-data; name=\"${part.key}\""),
-            RequestBody.create(null, ${part.value.name}));
+                // TypedFile
+        partsBuilder.addPart(Headers.of("Content-Disposition", "form-data; name=\"${part.key}\""),
+            RequestBody.create(MediaType.parse(${part.value.name}.mimeType()), ${part.value.name}.file()));
+
+                #elseif ($part.value.typedString)
+
+        partsBuilder.addPart(Headers.of("Content-Disposition", "form-data; name=\"${part.key}\""),
+            RequestBody.create(MediaType.parse(${part.value.name}.mimeType()), ${part.value.name}.toString()));
+
+                #elseif ($part.value.typedByteArray)
+
+        partsBuilder.addPart(Headers.of("Content-Disposition", "form-data; name=\"${part.key}\""),
+            RequestBody.create(MediaType.parse(${part.value.name}.mimeType()), ${part.value.name}.getBytes()));
+
+                #elseif ($part.value.mimeType != "")
+
+                // File elseif (part.value.isFile)
+
+        partsBuilder.addPart(Headers.of("Content-Disposition", "form-data; name=\"${part.key}\""),
+            RequestBody.create(MediaType.parse("${part.value.mimeType}"), ${part.value.name}));
+
 
                 #else
 
-        partsBuilder.addPart(
-            Headers.of("Content-Disposition", "form-data; name=\"${part.key}\""),
-            RequestBody.create(${part.value.type}, ${part.value.name}));
+        partsBuilder.addFormDataPart("${part.key}", ${part.value.name});
 
                 #end
             #end

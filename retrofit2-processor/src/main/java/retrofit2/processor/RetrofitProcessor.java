@@ -185,19 +185,39 @@ public class RetrofitProcessor extends AbstractProcessor {
 
   public static class Part {
     private final String name;
-    private final String type;
+    private final String mimeType;
+    private final boolean isFile;
+    private final boolean isTypedFile;
+    private final boolean isTypedString;
+    private final boolean isTypedByteArray;
 
-    public Part(String name, String type) {
-        this.name = name;
-        this.type = type;
+    public Part(String name, String mimeType, boolean isFile, boolean isTypedFile, boolean isTypedString, boolean isTypedByteArray) {
+      this.name = name;
+      this.mimeType = mimeType;
+      this.isFile = isFile;
+      this.isTypedFile = isTypedFile;
+      this.isTypedString = isTypedString;
+      this.isTypedByteArray = isTypedByteArray;
     }
 
     public String getName() {
-        return name;
+      return name;
     }
 
-    public String getType() {
-        return type;
+    public String getMimeType() {
+      return mimeType;
+    }
+    public boolean isFile() {
+      return isFile;
+    }
+    public boolean isTypedFile() {
+      return isTypedFile;
+    }
+    public boolean isTypedString() {
+      return isTypedString;
+    }
+    public boolean isTypedByteArray() {
+      return isTypedByteArray;
     }
   }
 
@@ -396,15 +416,27 @@ public class RetrofitProcessor extends AbstractProcessor {
 
     public Map<String, Part> buildParts(ExecutableElement method) {
       Map<String, Part> map = new HashMap<String, Part>();
+      Types typeUtils = processingEnv.getTypeUtils();
+      TypeMirror fileType = getTypeMirror(processingEnv, java.io.File.class);
+      TypeMirror typedFileType = getTypeMirror(processingEnv, retrofit.mime.TypedFile.class);
+      TypeMirror typedStringType = getTypeMirror(processingEnv, retrofit.mime.TypedString.class);
+      TypeMirror typedByteArrayType = getTypeMirror(processingEnv, retrofit.mime.TypedByteArray.class);
 
       List<? extends VariableElement> parameters = method.getParameters();
       for (VariableElement parameter : parameters) {
-        Retrofit.Part part = parameter
+        Retrofit.Part partAnnotation = parameter
           .getAnnotation(Retrofit.Part.class);
-        if (part == null) continue;
+        if (partAnnotation == null) continue;
 
-        String key = part.value().equals("") ? parameter.getSimpleName().toString() : part.value();
-        map.put(key, new Part(parameter.getSimpleName().toString(), part.type()));
+        String mimeType = partAnnotation.mimeType();
+        TypeMirror type = parameter.asType();
+        boolean isFile = typeUtils.isSubtype(type, fileType);
+        boolean isTypedFile = typeUtils.isSubtype(type, typedFileType);
+        boolean isTypedString = typeUtils.isSubtype(type, typedStringType);
+        boolean isTypedByteArray = typeUtils.isSubtype(type, typedByteArrayType);
+
+        String key = partAnnotation.value().equals("") ? parameter.getSimpleName().toString() : partAnnotation.value();
+        map.put(key, new Part(parameter.getSimpleName().toString(), mimeType, isFile, isTypedFile, isTypedString, isTypedByteArray));
       }
       return map;
     }

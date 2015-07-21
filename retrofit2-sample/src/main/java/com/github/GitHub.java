@@ -10,6 +10,8 @@ import java.io.File;
 import retrofit.converter.*;
 import java.util.List;
 import rx.functions.*;
+import retrofit.mime.TypedFile;
+import retrofit.mime.TypedString;
 
 @Retrofit("https://api.github.com")
 public abstract class GitHub {
@@ -63,7 +65,16 @@ public abstract class GitHub {
 
     @Multipart
     @PUT("/user/photo")
-    public abstract Observable<Contributor> updateUser(@Part(value = "photo", type = "") File photo, @Part(value = "description", type = "") String description);
+    public abstract Observable<Contributor> updateUser(@Part(value = "photo", mimeType = "image/png") File photo, @Part("description") String description);
+    @Multipart
+    @PUT("/user/photo")
+    public abstract Observable<Contributor> updateUserWithTypedFile(@Part("photo") TypedFile photo, @Part("description") String description);
+    @Multipart
+    @PUT("/user/photo")
+    public abstract Observable<Contributor> updateUserWithTypedStringAnootation(@Part("photo") TypedFile photo, @Part(value = "description", mimeType = "application/json") String description);
+    @Multipart
+    @PUT("/user/photo")
+    public abstract Observable<Contributor> updateUserWithTypedString(@Part("photo") TypedFile photo, @Part("description") TypedString description);
 
     @Headers("Cache-Control: max-age=640000")
     @GET("/widget/list")
