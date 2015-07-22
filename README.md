@@ -1,5 +1,15 @@
 # retrofit2
 
+[![Download](https://api.bintray.com/packages/yongjhih/maven/retrofit2/images/download.svg)](https://bintray.com/yongjhih/maven/retrofit2/_latestVersion)
+[![JitPack](https://img.shields.io/github/tag/yongjhih/retrofit2.svg?label=JitPack)](https://jitpack.io/#yongjhih/retrofit2)
+[![javadoc](https://img.shields.io/github/tag/yongjhih/retrofit2.svg?label=javadoc)](https://jitpack.io/com/github/yongjhih/retrofit2/simpleweibo/1.0.2/javadoc/index.html)
+[![Build Status](https://travis-ci.org/yongjhih/retrofit2.svg)](https://travis-ci.org/yongjhih/retrofit2)
+[![Join the chat at https://gitter.im/yongjhih/retrofit2](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/yongjhih/retrofit2?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+[![](https://avatars0.githubusercontent.com/u/5761889?v=3&s=48)](https://github.com/Wendly)
+[![](https://avatars3.githubusercontent.com/u/213736?v=3&s=48)](https://github.com/yongjhih)
+Contributors..
+
 ![retrofit2](art/retrofit2.png)
 
 Retrofit2 turns your REST API into a Java interface.
