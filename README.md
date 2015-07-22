@@ -47,6 +47,36 @@ Gson gson = new GsonBuilder()
 GitHub github = GitHub.create(new GsonConverter(gson));
 ```
 
+## Support Global Headers
+
+```java
+@Retrofit("https://api.github.com")
+@Headers({
+    "Accept: application/vnd.github.v3.full+json",
+    "User-Agent: Retrofit2"
+})
+public abstract class GitHub {
+    // ..
+}
+```
+
+## Support Retry Headers
+
+For Retry Stale example:
+
+```java
+@Retrofit("https://api.github.com")
+@RetryHeaders(
+    value = "Cache-Control: max-age=640000",
+    exceptions = retrofit2.RequestException.class
+)
+public abstract class GitHub {
+    // ..
+}
+```
+
+Retry the request with cache if RequestException thats network issue.
+
 ## Installation
 
 ```java
