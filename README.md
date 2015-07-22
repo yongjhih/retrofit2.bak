@@ -4,7 +4,7 @@
 
 Retrofit2 turns your REST API into a Java interface.
 
-Inspired by retrofit, compile-time version.
+Inspired by retrofit, compile-time version. (Implemented almost retrofit features. Bonus: [@RetryHeaders](#support-retry-headers), [Global Headers](#global-headers))
 
 ```java
 @Retrofit("https://api.github.com")
