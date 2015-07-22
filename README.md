@@ -151,7 +151,7 @@ abstract class GitHub {
 }
 ```
 
-## SYNCHRONOUS VS. ASYNCHRONOUS VS. OBSERVABLE (in progress)
+## SYNCHRONOUS VS. ASYNCHRONOUS VS. OBSERVABLE
 
 Methods can be declared for either synchronous or asynchronous execution.
 
@@ -185,13 +185,11 @@ Observable requests are subscribed asynchronously and observed on the same threa
 HTTP responses are automatically converted to a specified type using the RestAdapter's converter which defaults to JSON. The desired type is declared as the method return type or using the Callback or Observable.
 
 ```java
-// in progress
 @GET("/users/list")
 List<User> userList();
 ```
 
 ```java
-// in progress
 @GET("/users/list")
 void userList(Callback<List<User>> cb);
 ```
@@ -204,13 +202,11 @@ Observable<List<User>> userList();
 For access to the raw HTTP response use the Response type.
 
 ```java
-// in progress
 @GET("/users/list")
 Response userList();
 ```
 
 ```java
-// in progress
 @GET("/users/list")
 void userList(Callback<Response> cb);
 ```
