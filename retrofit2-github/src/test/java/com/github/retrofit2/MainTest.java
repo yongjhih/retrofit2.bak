@@ -88,6 +88,9 @@ public class MainTest {
     @Test
     public void testPut() {
     }
+    @Test
+    public void testPostField() {
+    }
 
     @Test
     public void testGetFile() {
@@ -102,7 +105,10 @@ public class MainTest {
     public void testGetWithHeader() {
     }
     @Test
-    public void testGetWithInterception() {
+    public void testPutTypedFile() {
+    }
+    @Test
+    public void testPutTypedFileTypedString() {
     }
 
     @Test
