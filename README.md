@@ -11,7 +11,7 @@ Inspired by retrofit, compile-time version.
 public abstract class GitHub {
   @GET("/users/{user}/repos")
   public abstract Observable<Repo> repos(@Path("user") String user);
-  
+
   public static GitHub create() {
     return new Retrofit_GitHub();
   }
@@ -34,20 +34,111 @@ Use annotations to describe the HTTP request:
 * Object conversion to request body (e.g., JSON, protocol buffers)
 * Multipart request body and file upload
 
-## Support Converter
+## API Declaration
 
-* Support custom converter: `GsonConveter`, `JacksonConverter`, `MoshiConveter`, `LoganSquareConverter`, etc.
+Annotations on the interface methods and its parameters indicate how a request will be handled.
+
+## REQUEST METHOD
+
+Every method must have an HTTP annotation that provides the request method and relative URL. There are five built-in annotations: `GET`, `POST`, `PUT`, `DELETE`, and `HEAD`. The relative URL of the resource is specified in the annotation.
 
 ```java
-Gson gson = new GsonBuilder()
-      .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-      .registerTypeAdapter(Date.class, new DateTypeAdapter())
-      .create();
-
-GitHub github = GitHub.create(new GsonConverter(gson));
+@GET("/users/list")
 ```
 
-## Support Global Headers
+You can also specify query parameters in the URL.
+
+```java
+@GET("/users/list?sort=desc")
+```
+
+## URL MANIPULATION
+
+A request URL can be updated dynamically using replacement blocks and parameters on the method. A replacement block is an alphanumeric string surrounded by `{` and `}`. A corresponding parameter must be annotated with `@Path` using the same string.
+
+```java
+@GET("/group/{id}/users")
+abstract Observable<List<User>> groupList(@Path("id") int groupId);
+```
+
+Query parameters can also be added.
+
+```java
+@GET("/group/{id}/users")
+abstract Observable<List<User>> groupList(@Path("id") int groupId, @Query("sort") String sort);
+```
+
+For complex query parameter combinations a `Map` can be used.
+
+```java
+@GET("/group/{id}/users")
+abstract Observable<List<User>> groupList(@Path("id") int groupId, @QueryMap Map<String, String> options);
+```
+
+## REQUEST BODY
+
+An object can be specified for use as an HTTP request body with the `@Body` annotation.
+
+```java
+@POST("/users/new")
+abstract Observable<User> createUser(@Body User user> cb);
+```
+
+The object will also be converted using the converter.
+
+## FORM ENCODED AND MULTIPART
+
+Methods can also be declared to send form-encoded and multipart data.
+
+Form-encoded data is sent when `@FormUrlEncoded` is present on the method. Each key-value pair is annotated with `@Field` containing the name and the object providing the value.
+
+```java
+@FormUrlEncoded
+@POST("/user/edit")
+abstract Observable<User> updateUser(@Field("first_name") String first, @Field("last_name") String last);
+```
+
+Multipart requests are used when `@Multipart` is present on the method. Parts are declared using the `@Part` annotation.
+
+```java
+@Multipart
+@PUT("/user/photo")
+abstract Observable<User> updateUser(@Part("photo") TypedFile photo, @Part("description") TypedString description);
+```
+
+Multipart parts use the converter. In progress: or they can implement `TypedOutput` to handle their own serialization.
+
+## HEADER MANIPULATION
+
+You can set static headers for a method using the `@Headers` annotation.
+
+```java
+@Headers("Cache-Control: max-age=640000")
+@GET("/widget/list")
+abstract Observable<List<Widget>> widgetList();
+```
+
+```java
+@Headers({
+    "Accept: application/vnd.github.v3.full+json",
+    "User-Agent: Retrofit2"
+})
+@GET("/users/{username}")
+abstract Observable<User> getUser(@Path("username") String username);
+```
+
+Note that headers do not overwrite each other. All headers with the same name will be included in the request.
+
+A request Header can be updated dynamically using the `@Header` annotation. A corresponding parameter must be provided to the `@Header`. If the value is null, the header will be omitted. Otherwise, `toString` will be called on the value, and the result used.
+
+```java
+@GET("/user")
+Observable<User> getUser(@Header("Authorization") String authorization);
+```
+
+### Global Headers
+
+Headers that need to be added to every request can be specified using `@Headers` on your service. The following code uses `@Headers` that will add a User-Agent header to every request.
 
 ```java
 @Retrofit("https://api.github.com")
@@ -55,7 +146,154 @@ GitHub github = GitHub.create(new GsonConverter(gson));
     "Accept: application/vnd.github.v3.full+json",
     "User-Agent: Retrofit2"
 })
-public abstract class GitHub {
+abstract class GitHub {
+    // ..
+}
+```
+
+## SYNCHRONOUS VS. ASYNCHRONOUS VS. OBSERVABLE (in progress)
+
+Methods can be declared for either synchronous or asynchronous execution.
+
+A method with a return type will be executed synchronously.
+
+```java
+@GET("/user/{id}/photo")
+Photo getUserPhoto(@Path("id") int id);
+```
+
+Asynchronous execution requires the last parameter of the method be a `Callback`.
+
+```java
+@GET("/user/{id}/photo")
+void getUserPhoto(@Path("id") int id, Callback<Photo> cb);
+```
+
+On Android, callbacks will be executed on the main thread. For desktop applications callbacks will happen on the same thread that executed the HTTP request.
+
+Retrofit also integrates [RxJava](https://github.com/ReactiveX/RxJava/wiki) to support methods with a return type of `rx.Observable`
+
+```java
+@GET("/user/{id}/photo")
+Observable<Photo> getUserPhoto(@Path("id") int id);
+```
+
+Observable requests are subscribed asynchronously and observed on the same thread that executed the HTTP request. To observe on a different thread (e.g. Android's main thread) call `observeOn(Scheduler)` on the returned `Observable`.
+
+## RESPONSE OBJECT TYPE
+
+HTTP responses are automatically converted to a specified type using the RestAdapter's converter which defaults to JSON. The desired type is declared as the method return type or using the Callback or Observable.
+
+```java
+// in progress
+@GET("/users/list")
+List<User> userList();
+```
+
+```java
+// in progress
+@GET("/users/list")
+void userList(Callback<List<User>> cb);
+```
+
+```java
+@GET("/users/list")
+Observable<List<User>> userList();
+```
+
+For access to the raw HTTP response use the Response type. (in progress)
+
+```java
+// in progress
+@GET("/users/list")
+Response userList();
+```
+
+```java
+// in progress
+@GET("/users/list")
+void userList(Callback<Response> cb);
+```
+
+```java
+// in progress
+@GET("/users/list")
+Observable<Response> userList();
+```
+
+## Target Configuration
+
+`Retrofit\_TARGET` is the class through which your API interfaces are turned into callable objects. By default, Retrofit2 will give you sane defaults for your platform but it allows for customization.
+
+### JSON CONVERSION
+
+Retrofit2 uses [LoganSquare](https://github.com/bluelinelabs/LoganSquare) by default to convert HTTP bodies to and from JSON. If you want to specify behavior that is different from Gson's defaults (e.g. naming policies, date formats, custom types), provide a new `Gson` instance with your desired behavior when building a `Retrofit_TARGET`. Refer to the [Gson documentation](https://sites.google.com/site/gson/gson-user-guide) for more details on customization.
+
+### CUSTOM GSON CONVERTER EXAMPLE
+
+The following code creates a new Gson instance that will convert all fields from lower case with underscores to camel case and vice versa. It also registers a type adapter for the `Date` class. This `DateTypeAdapter` will be used anytime Gson encounters a `Date` field.
+
+The gson instance is passed as a parameter to `GsonConverter`, which is a wrapper class for converting types.
+
+```java
+public static GitHub create() {
+    Gson gson = new GsonBuilder()
+        .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+        .registerTypeAdapter(Date.class, new DateTypeAdapter())
+        .create();
+
+    return new Retrofit_GitHub(new GsonConverter(gson));
+}
+```
+
+Each call on the generated `GitHub` will return objects converted using the Gson implementation provided to the `Retrofit_GitHub`.
+
+### CONTENT FORMAT AGNOSTIC
+
+In addition to JSON, Retrofit can be configured to use other content formats. Retrofit provides alternate converters for XML (using [Simple](http://simple.sourceforge.net/)) and Protocol Buffers (using [protobuf](https://code.google.com/p/protobuf/) or [Wire](https://github.com/square/wire)). Please see the [retrofit-converters](https://github.com/square/retrofit/tree/master/retrofit-converters) directory for the full listing of converters.
+
+The following code shows how to use `SimpleXMLConverter` to communicate with an API that uses XML
+
+```java
+@Retrofit("https://api.github.com")
+class GitHub {
+    // ..
+    public static GitHub create() {
+        return new Retrofit_GitHub(new SimpleXMLConverter());
+    }
+}
+
+GitHub github = GitHub.create();
+```
+
+### CUSTOM CONVERTERS
+
+If you need to communicate with an API that uses a content-format that Retrofit does not support out of the box (e.g. YAML, txt, custom format) or you wish to use a different library to implement an existing format, you can easily create your own converter. Create a class that implements the [`Converter` interface](https://github.com/square/retrofit/blob/master/retrofit/src/main/java/retrofit/converter/Converter.java) and pass in an instance when building your adapter.
+
+## CUSTOM ERROR HANDLING (in progress)
+
+If you need custom error handling for requests, you may provide your own ErrorHandler. The following code shows how to throw a custom exception when a response returns a HTTP 401 status code
+
+```java
+@Retrofit("https://api.github.com")
+@ErrorHandler(MyErrorHandler.class)
+class GitHub {
+    // ..
+}
+```
+
+Note that if the return exception is checked, it must be declared on the interface method. It is recommended that you pass the supplied RetrofitError as the cause to any new exceptions you throw.
+
+## LOGGING (in progress)
+
+If you need to take a closer look at the requests and responses you can easily add logging levels to the `Retrofit_GitHub` with the `LogLevel` property. The possible logging levels are `BASIC`, `FULL`, `HEADERS`, and `NONE`.
+
+The following code shows the addition of a full log level which will log the headers, body, and metadata for both requests and responses.
+
+```java
+@Retrofit("https://api.github.com")
+@LogLevel(Retrofit.LogLevel.FULL)
+class GitHub {
     // ..
 }
 ```
