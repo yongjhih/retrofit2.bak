@@ -335,7 +335,7 @@ public class RetrofitProcessor extends AbstractProcessor {
 
     private boolean buildIsResponseType(ExecutableElement method) {
       Types typeUtils = processingEnv.getTypeUtils();
-      TypeMirror responseType = getTypeMirror(processingEnv, com.squareup.okhttp.Response.class);
+      TypeMirror responseType = getTypeMirror(processingEnv, retrofit.client.Response.class);
       TypeMirror returnType = method.getReturnType();
 
       if (isObservable()) {

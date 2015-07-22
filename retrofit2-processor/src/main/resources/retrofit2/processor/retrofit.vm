@@ -31,7 +31,15 @@ import android.util.Log;
 import java.util.List;
 import java.util.ArrayList;
 
-import com.squareup.okhttp.*;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Headers;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.ResponseBody;
+import com.squareup.okhttp.RequestBody;
+import com.squareup.okhttp.FormEncodingBuilder;
+import com.squareup.okhttp.MultipartBuilder;
+
 import java.io.IOException;
 import retrofit.converter.*;
 import java.io.*;
@@ -77,21 +85,12 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
                  * mapper.readValue(jsonString, typeFactory.constructCollectionType(List.class, SomeClass.class));
                  */
 
-                //this.converter = new JacksonConverter();
-                //this.converter = new GsonConverter(new Gson());
                 this.converter = new LoganSquareConverter();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
 
-        /*
-        int cacheSize = 10 * 1024 * 1024; // 10 MiB
-        Cache cache = new Cache(cacheDirectory, cacheSize);
-
-        client = new OkHttpClient();
-        client.setCache(cache);
-        */
     }
 
 
@@ -101,8 +100,6 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
 
     @Override
     ${p.access}${p.type} ${p.getter}(${p.args}) {
-
-// if ($p.path.matches("^http://") && $p.path.matches("^https://"))
 
         String _url = "${p.path}";
         if (!_url.startsWith("http://") && !_url.startsWith("https://")) {
@@ -232,46 +229,14 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
 
     #end
 
-//    #if ($p.observable)
-//        #if ($p.responseType) // Response
-//
-//        return 1;
-//
-//        #else // MODEL
-//
-//        return 2;
-//
-//        #end
-//    #elseif ($p.callback) // Callback<?>
-//        #if ($p.responseType) // Callback<Response>
-//
-//        return 3;
-//
-//        #else // Callback<MODEL>
-//
-//        return 4;
-//
-//        #end
-//    #else
-//        #if ($p.responseType)
-//
-//        return 5;
-//
-//        #else
-//
-//        return 6;
-//
-//        #end
-//    #end
-
-        Observable<Response> responseCachedObs = Observable.create(new OnSubscribeResponse(client, requestBuilder.build())).doOnNext(new Action1<Response>() {
-            @Override public void call(Response response) {
+        Observable<com.squareup.okhttp.Response> responseCachedObs = Observable.create(new OnSubscribeResponse(client, requestBuilder.build())).doOnNext(new Action1<com.squareup.okhttp.Response>() {
+            @Override public void call(com.squareup.okhttp.Response response) {
             }
 
     #if (!$retryHeaders.isEmpty())
 
-        }).onErrorResumeNext(new Func1<Throwable, Observable<Response>>() {
-            @Override public Observable<Response> call(Throwable e) {
+        }).onErrorResumeNext(new Func1<Throwable, Observable<com.squareup.okhttp.Response>>() {
+            @Override public Observable<com.squareup.okhttp.Response> call(Throwable e) {
                 if (e instanceof RequestException) {
                     RequestException requestException = (RequestException) e;
                     Request.Builder reqBuilder = requestException.request().newBuilder();
@@ -306,8 +271,8 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
 
         #end
 
-        obs = responseCachedObs.map(new Func1<Response, String>() {
-            @Override public String call(Response response) {
+        obs = responseCachedObs.map(new Func1<com.squareup.okhttp.Response, String>() {
+            @Override public String call(com.squareup.okhttp.Response response) {
                 try {
                     return response.body().string();
                 } catch (Exception e) {
@@ -324,17 +289,8 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
                 try {
                     System.out.println(json);
 
-                    //TypeReference<${p.typeArgs}> ref = new TypeReference<>() {};
-                    //Type type = ((ParameterizedType) ref.getType()).getRawType();
-
         #if ($p.typeArgs2 != "")
 
-                    //jsonMapper.readValue(jsonString, (Class<List<String>>) List.class);
-
-                    //Type type = new Array${p.typeArgs}().getClass().getGenericSuperclass();
-                    // return (${p.typeArgs}) converter.fromBody(new JsonTypedInput(json), (Class<${p.typeArgs}>) List.class);
-                    //Type type = new Array${p.typeArgs}().getClass().getGenericSuperclass();
-                    //Type type = new Array${p.typeArgs}().getClass();
                     Type type = new TypeToken<${p.typeArgs}>(){}.getType();
                     return (${p.typeArgs}) converter.fromBody(new JsonTypedInput(json), type);
 
@@ -356,10 +312,16 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
 
     #end
 
+        Observable<retrofit.client.Response> retrofitResponseObs = responseCachedObs.map(new Func1<com.squareup.okhttp.Response, retrofit.client.Response>() {
+            @Override public retrofit.client.Response call(com.squareup.okhttp.Response response) {
+                return parseResponse(response);
+            }
+        });
+
     #if ($p.blocking)
         #if ($p.responseType)
 
-        return responseCachedObs.subscribeOn(Schedulers.io()).toBlocking().single();
+        return retrofitResponseObs.subscribeOn(Schedulers.io()).toBlocking().single();
 
         #else
 
@@ -369,7 +331,7 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
     #elseif ($p.callback)
         #if ($p.responseType) // Callback<Response>
 
-        responseCachedObs.subscribeOn(Schedulers.io()).subscribe(object -> {
+        retrofitResponseObs.subscribeOn(Schedulers.io()).subscribe(object -> {
             ${p.callbackName}.success(object, object);
         }, e -> {
             ${p.callbackName}.failure(RetrofitError.unexpectedError(_finalUrl, e));
@@ -377,9 +339,9 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
 
         #else // Callback<MODEL>
 
-        Observable.zip(responseCachedObs, obs, new Func2<Response, $p.typeArgs, $p.typeArgs>() {
-            @Override public $p.typeArgs call(Response response, $p.typeArgs object) {
-                ${p.callbackName}.success(object, parseResponse(response));
+        Observable.zip(retrofitResponseObs, obs, new Func2<retrofit.client.Response, $p.typeArgs, $p.typeArgs>() {
+            @Override public $p.typeArgs call(retrofit.client.Response response, $p.typeArgs object) {
+                ${p.callbackName}.success(object, response);
                 return object;
             }
         }).subscribeOn(Schedulers.io()).subscribe(new Action1<$p.typeArgs>() {
@@ -395,7 +357,7 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
     #else
         #if ($p.responseType)
 
-        return responseCachedObs;
+        return retrofitResponseObs;
 
         #else
 
@@ -408,7 +370,7 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
 #end
 
     // TODO onUnSubscribe to call.cancel();
-    public static class OnSubscribeResponse implements Observable.OnSubscribe<Response> {
+    public static class OnSubscribeResponse implements Observable.OnSubscribe<com.squareup.okhttp.Response> {
         final Request request;
         final OkHttpClient client;
 
@@ -418,13 +380,13 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
         }
 
         @Override
-        public void call(final Subscriber<? super Response> sub) {
+        public void call(final Subscriber<? super com.squareup.okhttp.Response> sub) {
             try {
-                client.newCall(request).enqueue(new Callback() {
+                client.newCall(request).enqueue(new com.squareup.okhttp.Callback() {
                     @Override public void onFailure(Request r, IOException e) {
                         sub.onError(new RequestException(r, e));
                     }
-                    @Override public void onResponse(Response response) {
+                    @Override public void onResponse(com.squareup.okhttp.Response response) {
                         sub.onNext(response);
                         sub.onCompleted();
                     }

@@ -25,7 +25,7 @@ import rx.functions.*;
 import retrofit.mime.TypedFile;
 import retrofit.mime.TypedString;
 import com.github.mobile.model.*;
-import com.squareup.okhttp.Response;
+import retrofit.client.Response;
 import retrofit.Callback;
 
 @Retrofit("https://api.github.com")

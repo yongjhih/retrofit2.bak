@@ -33,6 +33,8 @@ import rx.Observable;
 import rx.functions.*;
 import java.util.Arrays;
 import java.util.List;
+import retrofit.client.Response;
+import java.io.*;
 
 public class MainTest {
     @Test
@@ -140,4 +142,29 @@ public class MainTest {
         }).toList().toBlocking().single();
     }
     */
+
+    @Test
+    public void testObservableResponse() {
+        GitHub github = GitHub.create();
+        String string = github.contributorResponse("yongjhih", "retrofit2").map(new Func1<Response, String>() {
+            @Override public String call(Response response) {
+                StringBuilder sb = new StringBuilder();
+                try {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(response.getBody().in()));
+                String read = null;
+
+                    read = reader.readLine();
+                    while (read != null) {
+                        sb.append(read);
+                        read = reader.readLine();
+                    }
+                } catch (IOException e) {
+                }
+
+                return sb.toString();
+            }
+        }).toBlocking().single();
+        System.out.println(string);
+        assertTrue(string.contains("yongjhih"));
+    }
 }
