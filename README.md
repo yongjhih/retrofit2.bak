@@ -313,7 +313,7 @@ public abstract class GitHub {
 }
 ```
 
-Retry the request with cache if RequestException thats network issue.
+Retry the request with cache if `RequestException` thats network issue.
 
 ## Installation
 
