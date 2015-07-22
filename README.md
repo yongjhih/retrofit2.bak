@@ -201,7 +201,7 @@ void userList(Callback<List<User>> cb);
 Observable<List<User>> userList();
 ```
 
-For access to the raw HTTP response use the Response type. (in progress)
+For access to the raw HTTP response use the Response type.
 
 ```java
 // in progress
@@ -216,7 +216,6 @@ void userList(Callback<Response> cb);
 ```
 
 ```java
-// in progress
 @GET("/users/list")
 Observable<Response> userList();
 ```
