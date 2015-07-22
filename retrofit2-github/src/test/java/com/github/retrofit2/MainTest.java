@@ -34,7 +34,9 @@ import rx.functions.*;
 import java.util.Arrays;
 import java.util.List;
 import retrofit.client.Response;
+import retrofit.RetrofitError;
 import java.io.*;
+import java.util.concurrent.CountDownLatch;
 
 public class MainTest {
     @Test
@@ -166,5 +168,46 @@ public class MainTest {
         }).toBlocking().single();
         System.out.println(string);
         assertTrue(string.contains("yongjhih"));
+    }
+
+    @Test
+    public void testCallbackResponse() {
+        final CountDownLatch signal = new CountDownLatch(1);
+
+        GitHub github = GitHub.create();
+        github.contributorResponse("yongjhih", "retrofit2", new retrofit.Callback<Response>() {
+            @Override
+            public void success(Response response, Response response2) {
+                StringBuilder sb = new StringBuilder();
+                try {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(response.getBody().in()));
+                String read = null;
+
+                    read = reader.readLine();
+                    while (read != null) {
+                        sb.append(read);
+                        read = reader.readLine();
+                    }
+                } catch (IOException e) {
+                }
+
+                String string = sb.toString();
+                System.out.println(string);
+                assertTrue(string.contains("yongjhih"));
+                signal.countDown();
+            }
+
+            @Override
+            public void failure(RetrofitError retrofitError) {
+                assertTrue(false);
+                signal.countDown();
+            }
+        });
+        try {
+            signal.await();
+        } catch (InterruptedException e) {
+            assertTrue(false);
+        }
+
     }
 }

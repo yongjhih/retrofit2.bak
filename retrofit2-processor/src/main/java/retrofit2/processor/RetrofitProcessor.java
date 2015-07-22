@@ -345,7 +345,11 @@ public class RetrofitProcessor extends AbstractProcessor {
           return typeUtils.isSubtype(returnType, responseType);
         }
       } else if (isCallback()) {
-          return typeUtils.isSubtype(callbackTypeMirror, responseType);
+        List<? extends TypeMirror> params = ((DeclaredType) callbackTypeMirror).getTypeArguments();
+        if (params.size() == 1) { //  Callback<Response>
+          returnType = params.get(0); // Response
+          return typeUtils.isSubtype(returnType, responseType);
+        }
       }
 
       return typeUtils.isSubtype(returnType, responseType); // isBlocking()
@@ -736,7 +740,6 @@ public class RetrofitProcessor extends AbstractProcessor {
     public String getCallbackName() {
       return callbackName;
     }
-
 
     public boolean isObservable() {
       return isObservable;

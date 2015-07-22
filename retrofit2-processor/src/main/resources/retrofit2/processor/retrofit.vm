@@ -331,10 +331,14 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
     #elseif ($p.callback)
         #if ($p.responseType) // Callback<Response>
 
-        retrofitResponseObs.subscribeOn(Schedulers.io()).subscribe(object -> {
-            ${p.callbackName}.success(object, object);
-        }, e -> {
-            ${p.callbackName}.failure(RetrofitError.unexpectedError(_finalUrl, e));
+        retrofitResponseObs.subscribeOn(Schedulers.io()).subscribe(new Action1<$p.typeArgs>() {
+            @Override public void call($p.typeArgs object) {
+                ${p.callbackName}.success(object, object);
+            }
+        }, new Action1<Throwable>() {
+            @Override public void call(Throwable e) {
+                ${p.callbackName}.failure(RetrofitError.unexpectedError(_finalUrl, e));
+            }
         });
 
         #else // Callback<MODEL>
