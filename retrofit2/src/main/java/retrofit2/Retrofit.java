@@ -162,8 +162,4 @@ public @interface Retrofit {
       public String call(T t);
   }
 
-  public static interface Callback<T> {
-      public void onCompleted(List<T> t);
-      public void onError(Throwable e);
-  }
 }

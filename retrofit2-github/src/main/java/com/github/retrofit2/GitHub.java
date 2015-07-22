@@ -26,6 +26,7 @@ import retrofit.mime.TypedFile;
 import retrofit.mime.TypedString;
 import com.github.mobile.model.*;
 import com.squareup.okhttp.Response;
+import retrofit.Callback;
 
 @Retrofit("https://api.github.com")
 @Headers({
@@ -162,6 +163,21 @@ public abstract class GitHub {
 
     @GET("/repos/{owner}/{repo}/contributors")
     public abstract Observable<Response> contributorResponse(
+            @Path("owner") String owner,
+            @Path("repo") String repo);
+
+    @GET("/repos/{owner}/{repo}/contributors")
+    public abstract void contributorResponse(
+            @Path("owner") String owner,
+            @Path("repo") String repo, Callback<Response> callback);
+
+    @GET("/repos/{owner}/{repo}/contributors")
+    public abstract void contributorList(
+            @Path("owner") String owner,
+            @Path("repo") String repo, Callback<List<Contributor>> callback);
+
+    @GET("/repos/{owner}/{repo}/contributors")
+    public abstract List<Contributor> contributorListBlocking(
             @Path("owner") String owner,
             @Path("repo") String repo);
 

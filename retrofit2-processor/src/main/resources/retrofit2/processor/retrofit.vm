@@ -42,6 +42,10 @@ import com.google.gson.Gson;
 //import com.google.gson.reflect.TypeToken;
 import retrofit2.TypeToken;
 import retrofit2.RequestException;
+import retrofit.RetrofitError;
+import retrofit.client.Header;
+
+import rx.schedulers.*;
 
 /**
  * @see "https://github.com/square/okhttp/wiki/Recipes"
@@ -124,13 +128,17 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
             #end
         #end
 
-        Request.Builder requestBuilder = new Request.Builder().url(_sb.toString());
+        _url = _sb.toString();
+
+        Request.Builder requestBuilder = new Request.Builder().url(_url);
 
     #else
 
         Request.Builder requestBuilder = new Request.Builder().url(_url);
 
     #end
+
+        final String _finalUrl = _url;
 
     #if ($p.get)
 
@@ -224,13 +232,81 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
 
     #end
 
-    #if ($p.responseType)
+//    #if ($p.observable)
+//        #if ($p.responseType) // Response
+//
+//        return 1;
+//
+//        #else // MODEL
+//
+//        return 2;
+//
+//        #end
+//    #elseif ($p.callback) // Callback<?>
+//        #if ($p.responseType) // Callback<Response>
+//
+//        return 3;
+//
+//        #else // Callback<MODEL>
+//
+//        return 4;
+//
+//        #end
+//    #else
+//        #if ($p.responseType)
+//
+//        return 5;
+//
+//        #else
+//
+//        return 6;
+//
+//        #end
+//    #end
 
-        return Observable.create(new OnSubscribeResponse(client, requestBuilder.build()));
+        Observable<Response> responseCachedObs = Observable.create(new OnSubscribeResponse(client, requestBuilder.build())).doOnNext(new Action1<Response>() {
+            @Override public void call(Response response) {
+            }
 
-    #else
+    #if (!$retryHeaders.isEmpty())
 
-        return Observable.create(new OnSubscribeResponse(client, requestBuilder.build())).map(new Func1<Response, String>() {
+        }).onErrorResumeNext(new Func1<Throwable, Observable<Response>>() {
+            @Override public Observable<Response> call(Throwable e) {
+                if (e instanceof RequestException) {
+                    RequestException requestException = (RequestException) e;
+                    Request.Builder reqBuilder = requestException.request().newBuilder();
+
+        #foreach ($header in $retryHeaders.entrySet())
+
+                    reqBuilder.addHeader("$header.key", $header.value);
+
+        #end
+
+                    return Observable.create(new OnSubscribeResponse(client, reqBuilder.build()));
+                }
+                return Observable.error(e);
+            }
+
+    #end
+
+        }).cache();
+
+    #if (!$p.responseType)
+        #if ($p.observable)
+
+        $p.type obs;
+
+        #elseif ($p.callback)
+
+        Observable<$p.typeArgs> obs;
+
+        #else
+
+        Observable<$p.type> obs;
+
+        #end
+
+        obs = responseCachedObs.map(new Func1<Response, String>() {
             @Override public String call(Response response) {
                 try {
                     return response.body().string();
@@ -238,36 +314,6 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
                     throw new RuntimeException(e);
                 }
             }
-
-        #if (!$retryHeaders.isEmpty())
-
-        }).onErrorResumeNext(new Func1<Throwable, Observable<String>>() {
-            @Override public Observable<String> call(Throwable e) {
-                if (e instanceof RequestException) {
-                    RequestException requestException = (RequestException) e;
-                    Request.Builder reqBuilder = requestException.request().newBuilder();
-
-            #foreach ($header in $retryHeaders.entrySet())
-
-                    reqBuilder.addHeader("$header.key", $header.value);
-
-            #end
-
-                    return Observable.create(new OnSubscribeResponse(client, reqBuilder.build())).map(new Func1<Response, String>() {
-                        @Override public String call(Response response) {
-                            try {
-                                return response.body().string();
-                            } catch (Exception e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-                    });
-                }
-                return Observable.error(e);
-            }
-
-        #end
-
         }).filter(new Func1<String, Boolean>() {
             @Override public Boolean call(String json) {
                 return json != null;
@@ -308,6 +354,54 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
             }
         });
 
+    #end
+
+    #if ($p.blocking)
+        #if ($p.responseType)
+
+        return responseCachedObs.subscribeOn(Schedulers.io()).toBlocking().single();
+
+        #else
+
+        return obs.subscribeOn(Schedulers.io()).toBlocking().single();
+
+        #end
+    #elseif ($p.callback)
+        #if ($p.responseType) // Callback<Response>
+
+        responseCachedObs.subscribeOn(Schedulers.io()).subscribe(object -> {
+            ${p.callbackName}.success(object, object);
+        }, e -> {
+            ${p.callbackName}.failure(RetrofitError.unexpectedError(_finalUrl, e));
+        });
+
+        #else // Callback<MODEL>
+
+        Observable.zip(responseCachedObs, obs, new Func2<Response, $p.typeArgs, $p.typeArgs>() {
+            @Override public $p.typeArgs call(Response response, $p.typeArgs object) {
+                ${p.callbackName}.success(object, parseResponse(response));
+                return object;
+            }
+        }).subscribeOn(Schedulers.io()).subscribe(new Action1<$p.typeArgs>() {
+            @Override public void call($p.typeArgs object) {
+            }
+        }, new Action1<Throwable>() {
+            @Override public void call(Throwable e) {
+                ${p.callbackName}.failure(RetrofitError.unexpectedError(_finalUrl, e));
+            }
+        });
+
+        #end
+    #else
+        #if ($p.responseType)
+
+        return responseCachedObs;
+
+        #else
+
+        return obs;
+
+        #end
     #end
 
     }
@@ -375,4 +469,46 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
         }
         return string;
     }
+
+  static retrofit.client.Response parseResponse(com.squareup.okhttp.Response response) {
+    return new retrofit.client.Response(response.request().urlString(), response.code(), response.message(),
+        createHeaders(response.headers()), createResponseBody(response.body()));
+  }
+
+  private static TypedInput createResponseBody(final ResponseBody body) {
+    try {
+      if (body.contentLength() == 0) {
+        return null;
+      }
+    } catch (IOException e) {
+      return null;
+    }
+    return new TypedInput() {
+      @Override public String mimeType() {
+        MediaType mediaType = body.contentType();
+        return mediaType == null ? null : mediaType.toString();
+      }
+
+      @Override public long length() {
+        try {
+          return body.contentLength();
+        } catch (IOException e) {
+          return 0L;
+        }
+      }
+
+      @Override public InputStream in() throws IOException {
+        return body.byteStream();
+      }
+    };
+  }
+
+  private static List<Header> createHeaders(Headers headers) {
+    int size = headers.size();
+    List<Header> headerList = new ArrayList<Header>(size);
+    for (int i = 0; i < size; i++) {
+      headerList.add(new Header(headers.name(i), headers.value(i)));
+    }
+    return headerList;
+  }
 }

@@ -17,6 +17,8 @@
 package retrofit2.processor;
 
 import retrofit2.Retrofit;
+import retrofit.RetrofitError;
+import retrofit.Callback;
 import com.google.auto.service.AutoService;
 import com.google.common.base.Functions;
 import com.google.common.base.Function;
@@ -245,9 +247,13 @@ public class RetrofitProcessor extends AbstractProcessor {
     private final boolean isPut;
     private final boolean isPost;
     private final boolean isDelete;
-    private final boolean isResponseType;
+    private final boolean isObservable; // returnType Observable
+    private final boolean isResponseType; // returnType == Response || returnType<Response>
+    private final boolean isVoid;
+    private final boolean isBlocking;
     private final String body;
     private final String callbackType;
+    private final TypeMirror callbackTypeMirror;
     private final String callbackArg;
     private final ProcessingEnvironment processingEnv;
     private final TypeSimplifier typeSimplifier;
@@ -255,6 +261,7 @@ public class RetrofitProcessor extends AbstractProcessor {
     private final Map<String, String> headers;
     private final Map<String, String> fields;
     private final Map<String, Part> parts;
+    private String callbackName;
 
     Property(
         String name,
@@ -273,8 +280,6 @@ public class RetrofitProcessor extends AbstractProcessor {
       this.annotations = buildAnnotations(typeSimplifier);
       this.args = formalTypeArgsString(method);
       this.path = buildPath(method);
-      this.typeArgs = buildTypeArguments(type); // Observable<List<String>> -> List<String>
-      this.typeArgs2 = buildTypeArguments(typeArgs); // Observable<List<String>> -> String
       this.queries = buildQueries(method);
       this.queryMaps = buildQueryMaps(method);
       this.queryBundles = buildQueryBundles(method);
@@ -282,28 +287,68 @@ public class RetrofitProcessor extends AbstractProcessor {
       this.isPut = buildIsPut(method);
       this.isPost = buildIsPost(method);
       this.isDelete = buildIsDelete(method);
-      this.isResponseType = buildIsResponseType(method);
+      this.isObservable = buildIsObservable(method);
       this.body = buildBody(method);
-      this.callbackType = buildCallbackType(method);
-      this.callbackArg = buildCallbackArg(method);
+      this.callbackTypeMirror = buildCallbackTypeMirror(method);
+      //this.callbackType = buildTypeArgument(callbackTypeMirror);
+      this.callbackType = buildCallbackTypeArgument(method);
+      this.callbackArg = buildTypeArguments(callbackType);
+      this.isBlocking = !isCallback() && !isObservable();
+      this.isResponseType = buildIsResponseType(method);
+      if (isObservable()) {
+        this.typeArgs = buildTypeArguments(type); // Observable<List<String>> -> List<String>
+        this.typeArgs2 = buildTypeArguments(typeArgs); // Observable<List<String>> -> String
+      } else if (isCallback()) {
+        this.typeArgs = callbackType;  // Callback<List<String>> -> List<String>
+        this.typeArgs2 = buildTypeArguments(typeArgs); // Callback<List<String>> -> String
+      } else { // isBlocking
+        this.typeArgs = type;
+      }
       if ("".equals(typeArgs)) typeArgs = callbackType;
+      this.isVoid = buildIsVoid(method);
       this.permissions = buildPermissions(method);
       this.headers = buildHeaders(method);
       this.fields = buildFields(method);
       this.parts = buildParts(method);
     }
 
+    private boolean buildIsObservable(ExecutableElement method) {
+      Types typeUtils = processingEnv.getTypeUtils();
+      TypeMirror obsType = getTypeMirror(processingEnv, rx.Observable.class);
+      TypeMirror returnType = method.getReturnType();
+
+      if (returnType instanceof DeclaredType) {
+        List<? extends TypeMirror> params = ((DeclaredType) returnType).getTypeArguments();
+        if (params.size() == 1) {
+          obsType = typeUtils.getDeclaredType((TypeElement) typeUtils.asElement(obsType), new TypeMirror[] {params.get(0)});
+
+          return typeUtils.isSubtype(returnType, obsType);
+        }
+      }
+
+      return false;
+    }
+
+    private boolean buildIsVoid(ExecutableElement method) {
+      return method.getReturnType().getKind() == TypeKind.VOID;
+    }
+
     private boolean buildIsResponseType(ExecutableElement method) {
       Types typeUtils = processingEnv.getTypeUtils();
       TypeMirror responseType = getTypeMirror(processingEnv, com.squareup.okhttp.Response.class);
       TypeMirror returnType = method.getReturnType();
-      List<? extends TypeMirror> params = ((DeclaredType) returnType).getTypeArguments();
 
-      if (params.size() == 1) { // Observable<Response>
-        returnType = params.get(0); // Response
-        return typeUtils.isSubtype(returnType, responseType);
+      if (isObservable()) {
+        List<? extends TypeMirror> params = ((DeclaredType) returnType).getTypeArguments();
+        if (params.size() == 1) { // Observable<Response>
+          returnType = params.get(0); // Response
+          return typeUtils.isSubtype(returnType, responseType);
+        }
+      } else if (isCallback()) {
+          return typeUtils.isSubtype(callbackTypeMirror, responseType);
       }
-      return false;
+
+      return typeUtils.isSubtype(returnType, responseType); // isBlocking()
     }
 
     private String buildTypeArguments(String type) {
@@ -313,13 +358,31 @@ public class RetrofitProcessor extends AbstractProcessor {
       return "";
     }
 
-    public String buildCallbackArg(ExecutableElement method) {
-        return "callback"; // TODO
+    private TypeMirror buildCallbackTypeMirror(ExecutableElement method) {
+      Types typeUtils = processingEnv.getTypeUtils();
+      TypeMirror callback = getTypeMirror(processingEnv, Callback.class);
+
+      List<? extends VariableElement> parameters = method.getParameters();
+      for (VariableElement parameter : parameters) {
+        TypeMirror type = parameter.asType();
+        if (type instanceof DeclaredType) {
+          List<? extends TypeMirror> params = ((DeclaredType) type).getTypeArguments();
+          if (params.size() == 1) {
+            callback = typeUtils.getDeclaredType((TypeElement) typeUtils.asElement(callback), new TypeMirror[] {params.get(0)});
+
+            if (typeUtils.isSubtype(type, callback)) {
+              this.callbackName = parameter.getSimpleName().toString();
+              return callback;
+            }
+          }
+        }
+      }
+      return null;
     }
 
-    public String buildCallbackType(ExecutableElement method) {
+    private String buildCallbackTypeArgument(ExecutableElement method) {
       Types typeUtils = processingEnv.getTypeUtils();
-      TypeMirror callback = getTypeMirror(processingEnv, Retrofit.Callback.class);
+      TypeMirror callback = getTypeMirror(processingEnv, Callback.class);
 
       List<? extends VariableElement> parameters = method.getParameters();
       for (VariableElement parameter : parameters) {
@@ -334,6 +397,14 @@ public class RetrofitProcessor extends AbstractProcessor {
             }
           }
         }
+      }
+      return "";
+    }
+
+    private String buildTypeArgument(TypeMirror type) {
+      if (type != null) {
+          List<? extends TypeMirror> params = ((DeclaredType) type).getTypeArguments();
+          return typeSimplifier.simplify(params.get(0));
       }
       return "";
     }
@@ -660,6 +731,23 @@ public class RetrofitProcessor extends AbstractProcessor {
 
     public String getCallbackArg() {
       return callbackArg;
+    }
+
+    public String getCallbackName() {
+      return callbackName;
+    }
+
+
+    public boolean isObservable() {
+      return isObservable;
+    }
+
+    public boolean isVoid() {
+      return isVoid;
+    }
+
+    public boolean isBlocking() {
+      return isBlocking;
     }
 
     public boolean isResponseType() {
