@@ -136,6 +136,9 @@ class RetrofitTemplateVars extends TemplateVars {
 
   String baseUrl = "";
 
+  Map<String, String> headers = Collections.emptyMap();
+  Map<String, String> retryHeaders = Collections.emptyMap();
+
   /**
    * The simple names of validation methods (marked {@code @Retrofit.Validate}) in the Retrofit
    * class. (Currently, this set is either empty or a singleton.)

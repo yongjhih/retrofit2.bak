@@ -700,10 +700,6 @@ public class RetrofitProcessor extends AbstractProcessor {
       return headers;
     }
 
-    public Map<String, String> getRetryHeaders() {
-      return Collections.emptyMap();
-    }
-
     public Map<String, String> getFields() {
       return fields;
     }
@@ -905,9 +901,29 @@ public class RetrofitProcessor extends AbstractProcessor {
     Retrofit typeAnnoation = type.getAnnotation(Retrofit.class);
     vars.baseUrl = typeAnnoation.value();
 
+    Map<String, String> headerMap = new HashMap<String, String>();
+    Retrofit.Headers headersAnnotation = type.getAnnotation(Retrofit.Headers.class);
+    if (headersAnnotation != null) {
+      for (String header : headersAnnotation.value()) {
+        String[] tokens = header.split(":");
+        headerMap.put(tokens[0].trim(), "\"" + tokens[1].trim() + "\"");
+      }
+      vars.headers = headerMap;
+    }
+
+    Map<String, String> retryHeaderMap = new HashMap<String, String>();
+    Retrofit.RetryHeaders retryHeadersAnnotation = type.getAnnotation(Retrofit.RetryHeaders.class);
+    if (retryHeadersAnnotation != null) {
+      for (String header : retryHeadersAnnotation.value()) {
+        String[] tokens = header.split(":");
+        retryHeaderMap.put(tokens[0].trim(), "\"" + tokens[1].trim() + "\"");
+      }
+      vars.retryHeaders = retryHeaderMap;
+    }
+
     TypeElement parcelable = processingEnv.getElementUtils().getTypeElement("android.os.Parcelable");
     vars.parcelable = parcelable != null
-        && processingEnv.getTypeUtils().isAssignable(type.asType(), parcelable.asType());
+      && processingEnv.getTypeUtils().isAssignable(type.asType(), parcelable.asType());
     // Check for @Retrofit.Builder and add appropriate variables if it is present.
     if (builder.isPresent()) {
       builder.get().defineVars(vars, typeSimplifier, methodToPropertyName);
