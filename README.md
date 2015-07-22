@@ -303,7 +303,7 @@ class GitHub {
 }
 ```
 
-## Support Retry Headers
+## Support Retry Headers: `@RetryHeaders`
 
 For Retry Stale example:
 
@@ -320,7 +320,29 @@ public abstract class GitHub {
 
 Retry the request with cache if `RequestException` thats network issue.
 
+## Support Interceptor: `@RequestInterceptor` (in progress)
+
+```java
+@Retrofit("https://api.github.com")
+@RequestInterceptor(MyRequestInterceptor.class)
+```
+
 ## Installation
+
+via jcenter(in progress):
+
+```java
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile 'com.infstory:retrofit2:1.0.0'
+    apt 'com.infstory:retrofit2-processor:1.0.0'
+}
+```
+
+or via jitpack:
 
 ```java
 repositories {
