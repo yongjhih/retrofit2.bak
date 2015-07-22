@@ -210,4 +210,71 @@ public class MainTest {
         }
 
     }
+
+    @Test
+    public void testCallbackList() {
+        final CountDownLatch signal = new CountDownLatch(1);
+
+        GitHub github = GitHub.create();
+        github.contributorList("yongjhih", "retrofit2", new retrofit.Callback<List<Contributor>>() {
+            @Override
+            public void success(List<Contributor> list, Response response) {
+                boolean contains = false;
+                for (Contributor c : list) {
+                    System.out.println(c.login);
+                    if (!c.login.equals("yongjhih")) continue;
+                    contains = true;
+                }
+                assertTrue(contains);
+                signal.countDown();
+            }
+
+            @Override
+            public void failure(RetrofitError retrofitError) {
+                assertTrue(false);
+                signal.countDown();
+            }
+        });
+        try {
+            signal.await();
+        } catch (InterruptedException e) {
+            assertTrue(false);
+        }
+    }
+
+    @Test
+    public void testBlockingList() {
+        GitHub github = GitHub.create();
+        List<Contributor> list = github.contributorListBlocking("yongjhih", "retrofit2");
+        boolean contains = false;
+        for (Contributor c : list) {
+            System.out.println(c.login);
+            if (!c.login.equals("yongjhih")) continue;
+            contains = true;
+        }
+        assertTrue(contains);
+    }
+
+    @Test
+    public void testBlockingResponse() {
+        GitHub github = GitHub.create();
+        Response response = github.contributorResponseBlocking("yongjhih", "retrofit2");
+
+        StringBuilder sb = new StringBuilder();
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(response.getBody().in()));
+            String read = null;
+
+            read = reader.readLine();
+            while (read != null) {
+                sb.append(read);
+                read = reader.readLine();
+            }
+        } catch (IOException e) {
+        }
+
+        String string = sb.toString();
+        System.out.println(string);
+        assertTrue(string.contains("yongjhih"));
+    }
 }

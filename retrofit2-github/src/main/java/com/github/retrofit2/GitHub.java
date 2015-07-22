@@ -181,6 +181,11 @@ public abstract class GitHub {
             @Path("owner") String owner,
             @Path("repo") String repo);
 
+    @GET("/repos/{owner}/{repo}/contributors")
+    public abstract Response contributorResponseBlocking(
+            @Path("owner") String owner,
+            @Path("repo") String repo);
+
     public static GitHub create() {
         return new Retrofit_GitHub();
     }
