@@ -224,6 +224,12 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
 
     #end
 
+    #if ($p.responseType)
+
+        return Observable.create(new OnSubscribeResponse(client, requestBuilder.build()));
+
+    #else
+
         return Observable.create(new OnSubscribeResponse(client, requestBuilder.build())).map(new Func1<Response, String>() {
             @Override public String call(Response response) {
                 try {
@@ -301,8 +307,10 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
                 return object != null;
             }
         });
-    }
 
+    #end
+
+    }
 #end
 
     // TODO onUnSubscribe to call.cancel();

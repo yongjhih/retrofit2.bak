@@ -245,6 +245,7 @@ public class RetrofitProcessor extends AbstractProcessor {
     private final boolean isPut;
     private final boolean isPost;
     private final boolean isDelete;
+    private final boolean isResponseType;
     private final String body;
     private final String callbackType;
     private final String callbackArg;
@@ -281,6 +282,7 @@ public class RetrofitProcessor extends AbstractProcessor {
       this.isPut = buildIsPut(method);
       this.isPost = buildIsPost(method);
       this.isDelete = buildIsDelete(method);
+      this.isResponseType = buildIsResponseType(method);
       this.body = buildBody(method);
       this.callbackType = buildCallbackType(method);
       this.callbackArg = buildCallbackArg(method);
@@ -289,6 +291,19 @@ public class RetrofitProcessor extends AbstractProcessor {
       this.headers = buildHeaders(method);
       this.fields = buildFields(method);
       this.parts = buildParts(method);
+    }
+
+    private boolean buildIsResponseType(ExecutableElement method) {
+      Types typeUtils = processingEnv.getTypeUtils();
+      TypeMirror responseType = getTypeMirror(processingEnv, com.squareup.okhttp.Response.class);
+      TypeMirror returnType = method.getReturnType();
+      List<? extends TypeMirror> params = ((DeclaredType) returnType).getTypeArguments();
+
+      if (params.size() == 1) { // Observable<Response>
+        returnType = params.get(0); // Response
+        return typeUtils.isSubtype(returnType, responseType);
+      }
+      return false;
     }
 
     private String buildTypeArguments(String type) {
@@ -312,8 +327,7 @@ public class RetrofitProcessor extends AbstractProcessor {
         if (type instanceof DeclaredType) {
           List<? extends TypeMirror> params = ((DeclaredType) type).getTypeArguments();
           if (params.size() == 1) {
-            callback = typeUtils.getDeclaredType((TypeElement) typeUtils
-                    .asElement(callback), new TypeMirror[] {params.get(0)});
+            callback = typeUtils.getDeclaredType((TypeElement) typeUtils.asElement(callback), new TypeMirror[] {params.get(0)});
 
             if (typeUtils.isSubtype(type, callback)) {
               return typeSimplifier.simplify(params.get(0));
@@ -646,6 +660,10 @@ public class RetrofitProcessor extends AbstractProcessor {
 
     public String getCallbackArg() {
       return callbackArg;
+    }
+
+    public boolean isResponseType() {
+      return isResponseType;
     }
 
     public String getBody() {
