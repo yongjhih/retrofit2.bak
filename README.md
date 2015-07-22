@@ -1,5 +1,7 @@
 # retrofit2
 
+[![Join the chat at https://gitter.im/yongjhih/retrofit2](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/yongjhih/retrofit2?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 [![Download](https://api.bintray.com/packages/yongjhih/maven/retrofit2/images/download.svg)](https://bintray.com/yongjhih/maven/retrofit2/_latestVersion)
 [![JitPack](https://img.shields.io/github/tag/yongjhih/retrofit2.svg?label=JitPack)](https://jitpack.io/#yongjhih/retrofit2)
 [![javadoc](https://img.shields.io/github/tag/yongjhih/retrofit2.svg?label=javadoc)](https://jitpack.io/com/github/yongjhih/retrofit2/simpleweibo/1.0.2/javadoc/index.html)
