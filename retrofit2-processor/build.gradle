@@ -7,6 +7,7 @@ sourceCompatibility = '1.6'
 repositories {
     jcenter()
     maven { url "https://jitpack.io" }
+    maven { url "https://dl.bintray.com/yongjhih/maven/" }
 }
 
 dependencies {
@@ -15,7 +16,7 @@ dependencies {
   compile 'com.google.code.findbugs:jsr305:2.0.3'
   compile 'org.apache.velocity:velocity:1.7'
   compile 'org.ow2.asm:asm:4.1'
-  compile 'com.github.yongjhih:converter-logansquare-retrofit:014829f586'
+  compile 'com.infstory:converter-logansquare-retrofit:1.0.0'
   compile 'com.squareup.retrofit:retrofit:1.9.0'
   compile 'io.reactivex:rxjava:1.0.9'
   compile 'com.squareup.okhttp:okhttp:2.4.0'
