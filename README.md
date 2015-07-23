@@ -247,17 +247,36 @@ The following code creates a new Gson instance that will convert all fields from
 The gson instance is passed as a parameter to `GsonConverter`, which is a wrapper class for converting types.
 
 ```java
-public static GitHub create() {
-    Gson gson = new GsonBuilder()
-        .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-        .registerTypeAdapter(Date.class, new DateTypeAdapter())
-        .create();
+public static class DateGsonConverter extends GsonConverter {
+    public DateGsonConverter() {
+        super(new com.google.gson.GsonBuilder()
+            .setFieldNamingPolicy(com.google.gson.FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+            .registerTypeAdapter(java.util.Date.class, new com.google.gson.internal.bind.DateTypeAdapter())
+            .create());
+    }
+}
 
-    return new Retrofit_GitHub(new GsonConverter(gson));
+@Retrofit("https://api.github.com")
+@Converter(DateGsonConverter.class)
+abstract class GitHub {
 }
 ```
 
 Each call on the generated `GitHub` will return objects converted using the Gson implementation provided to the `Retrofit_GitHub`.
+
+### CUSTOM CONVERTER FOR METHOD
+
+Specify another converter instance for one of methods by the following code:
+
+```java
+@Retrofit("https://api.github.com")
+@Converter(DateGsonConverter.class)
+abstract class GitHub {
+    @GET("/users/{username}")
+    @Converter(LoganSquareConverter.class)
+    abstract Observable<User> getUser(@Path("username") String username);
+}
+```
 
 ### CONTENT FORMAT AGNOSTIC
 
@@ -267,7 +286,7 @@ The following code shows how to use `SimpleXMLConverter` to communicate with an 
 
 ```java
 @Retrofit("https://api.github.com")
-class GitHub {
+abstract class GitHub {
     // ..
     public static GitHub create() {
         return new Retrofit_GitHub(new SimpleXMLConverter());
