@@ -241,10 +241,21 @@ public abstract class GitHub {
     }
 
     @GET("/users/{username}/repos")
-    public abstract Observable<List<Repository>> repositorieList(@Path("username") String username);
+    public abstract Observable<List<Repository>> repositoryList(@Path("username") String username);
 
     public Observable<Repository> repositories(String username) {
-        return repositorieList(username).flatMap(new Func1<List<Repository>, Observable<Repository>>() {
+        return repositoryList(username).flatMap(new Func1<List<Repository>, Observable<Repository>>() {
+            @Override public Observable<Repository> call(List<Repository> list) {
+                return Observable.from(list);
+            }
+        });
+    }
+
+    @GET("/orgs/{org}/repos")
+    public abstract Observable<List<Repository>> orgRepositoryList(@Path("org") String org);
+
+    public Observable<Repository> orgRepositories(String org) {
+        return orgRepositoryList(org).flatMap(new Func1<List<Repository>, Observable<Repository>>() {
             @Override public Observable<Repository> call(List<Repository> list) {
                 return Observable.from(list);
             }

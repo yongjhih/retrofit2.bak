@@ -150,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
         }));
         adapter.fragments.add(FragmentPage.create().title("8tory").fragment(() -> {
             return RxCardsFragment.create()
-                .items(Observable.defer(() -> github.repositories("8tory").take(1280).toSortedList((a, b) -> {
+                .items(Observable.defer(() -> github.orgRepositories("8tory").take(1280).toSortedList((a, b) -> {
                     return b.stargazers_count - a.stargazers_count;
                 }).flatMap(list -> Observable.from(list)).map(repo -> {
                     RxCard card = new RxCard();
