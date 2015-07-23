@@ -14,6 +14,8 @@ Contributors..
 
 Retrofit2 turns your REST API into a Java interface.
 
+See Also: https://medium.com/@yongjhih/retrofit2-aa2fffd1a3c0
+
 Inspired by retrofit, compile-time version. (Implemented almost retrofit features. Bonus: [@RetryHeaders](#support-retry-headers-retryheaders), [Global Headers](#global-headers))
 
 ```java
