@@ -1,4 +1,5 @@
 apply plugin: 'java'
+apply from: 'deploy.gradle'
 
 targetCompatibility = '1.6'
 sourceCompatibility = '1.6'
@@ -16,14 +17,14 @@ dependencies {
   compile 'org.ow2.asm:asm:4.1'
   compile 'com.github.yongjhih:converter-logansquare-retrofit:014829f586'
   compile 'com.squareup.retrofit:retrofit:1.9.0'
+  compile 'io.reactivex:rxjava:1.0.9'
+  compile 'com.squareup.okhttp:okhttp:2.4.0'
 
   testCompile files(System.getenv("JAVA_HOME") + "/lib/tools.jar")
   testCompile 'com.google.guava:guava-testlib:17.0'
   testCompile 'com.google.testing.compile:compile-testing:0.6'
   testCompile 'com.google.android:android:4.1.1.4'
   testCompile 'com.google.truth:truth:0.25'
-  testCompile 'io.reactivex:rxjava:1.0.9'
-  testCompile 'com.squareup.okhttp:okhttp:2.4.0'
 }
 
 tasks.withType(Test) {
