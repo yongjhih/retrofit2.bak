@@ -20,7 +20,7 @@ Inspired by square/retrofit. retrofit2 is re-implemented by compile-time annotat
 
 square/retrofit is a great project, also square/dagger. google/dagger2 is based on the same reason to re-implement.
 
-See Also: https://medium.com/@yongjhih/retrofit2-aa2fffd1a3c0
+See Also: [![](art/medium-48.jpg)](https://medium.com/@yongjhih/retrofit2-aa2fffd1a3c0)
 
 retrofit2 implemented almost retrofit features. Bonus: [@RetryHeaders](#support-retry-headers-retryheaders), [Global Headers](#global-headers))
 
