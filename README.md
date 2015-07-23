@@ -411,6 +411,10 @@ Github sample app:
 * https://github.com/square/okhttp/wiki/Recipes
 * http://square.github.io/okhttp/javadoc/com/squareup/okhttp/RequestBody.html
 
+## Credit
+
+* Square, Inc.
+
 ## License
 
 ```
