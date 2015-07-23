@@ -12,11 +12,15 @@ Contributors..
 
 ![retrofit2](art/retrofit2.png)
 
-Retrofit2 turns your REST API into a Java interface.
+retrofit2 turns your REST API into a Java interface.
+
+Inspired by square/retrofit. retrofit2 is re-implemented by compile-time annotation processing that benefit to debugging.
+
+square/retrofit is a great project, also square/dagger. google/dagger2 is based on the same reason to re-implement.
 
 See Also: https://medium.com/@yongjhih/retrofit2-aa2fffd1a3c0
 
-Inspired by retrofit, compile-time version. (Implemented almost retrofit features. Bonus: [@RetryHeaders](#support-retry-headers-retryheaders), [Global Headers](#global-headers))
+retrofit2 implemented almost retrofit features. Bonus: [@RetryHeaders](#support-retry-headers-retryheaders), [Global Headers](#global-headers))
 
 ```java
 @Retrofit("https://api.github.com")
