@@ -261,6 +261,7 @@ public static class DateGsonConverter extends GsonConverter {
 @Retrofit("https://api.github.com")
 @Converter(DateGsonConverter.class)
 abstract class GitHub {
+    // ..
 }
 ```
 
@@ -277,6 +278,8 @@ abstract class GitHub {
     @GET("/users/{username}")
     @Converter(LoganSquareConverter.class)
     abstract Observable<User> getUser(@Path("username") String username);
+
+    // ..
 }
 ```
 
@@ -288,14 +291,10 @@ The following code shows how to use `SimpleXMLConverter` to communicate with an 
 
 ```java
 @Retrofit("https://api.github.com")
+@Converter(SimpleXMLConverter.class)
 abstract class GitHub {
     // ..
-    public static GitHub create() {
-        return new Retrofit_GitHub(new SimpleXMLConverter());
-    }
 }
-
-GitHub github = GitHub.create();
 ```
 
 ### CUSTOM CONVERTERS
