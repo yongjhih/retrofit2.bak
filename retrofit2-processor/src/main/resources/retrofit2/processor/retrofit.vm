@@ -215,6 +215,10 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
 
         requestBuilder.delete();
 
+    #elseif ($p.head)
+
+        requestBuilder.head();
+
     #end
 
     #foreach ($header in $headers.entrySet())

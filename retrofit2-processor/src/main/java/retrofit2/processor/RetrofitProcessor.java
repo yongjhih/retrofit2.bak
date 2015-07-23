@@ -247,6 +247,7 @@ public class RetrofitProcessor extends AbstractProcessor {
     private final boolean isPut;
     private final boolean isPost;
     private final boolean isDelete;
+    private final boolean isHead;
     private final boolean isObservable; // returnType Observable
     private final boolean isResponseType; // returnType == Response || returnType<Response>
     private final boolean isVoid;
@@ -287,6 +288,7 @@ public class RetrofitProcessor extends AbstractProcessor {
       this.isPut = buildIsPut(method);
       this.isPost = buildIsPost(method);
       this.isDelete = buildIsDelete(method);
+      this.isHead = buildIsHead(method);
       this.isObservable = buildIsObservable(method);
       this.body = buildBody(method);
       this.callbackTypeMirror = buildCallbackTypeMirror(method);
@@ -433,6 +435,11 @@ public class RetrofitProcessor extends AbstractProcessor {
         return method.getAnnotation(Retrofit.DELETE.class) != null;
     }
 
+    public boolean buildIsHead(ExecutableElement method) {
+        // TODO duplicated routine
+        return method.getAnnotation(Retrofit.HEAD.class) != null;
+    }
+
     public String buildBody(ExecutableElement method) {
       String body = "";
 
@@ -455,10 +462,12 @@ public class RetrofitProcessor extends AbstractProcessor {
       Retrofit.PUT put = method.getAnnotation(Retrofit.PUT.class);
       Retrofit.POST post = method.getAnnotation(Retrofit.POST.class);
       Retrofit.DELETE delete = method.getAnnotation(Retrofit.DELETE.class);
+      Retrofit.HEAD head = method.getAnnotation(Retrofit.HEAD.class);
       if (get != null) return Arrays.asList(get.permissions());
       if (put != null) return Arrays.asList(put.permissions());
       if (post != null) return Arrays.asList(post.permissions());
       if (delete != null) return Arrays.asList(delete.permissions());
+      if (head != null) return Arrays.asList(head.permissions());
       return Collections.emptyList();
     }
 
@@ -559,11 +568,13 @@ public class RetrofitProcessor extends AbstractProcessor {
       Retrofit.PUT put = method.getAnnotation(Retrofit.PUT.class);
       Retrofit.POST post = method.getAnnotation(Retrofit.POST.class);
       Retrofit.DELETE delete = method.getAnnotation(Retrofit.DELETE.class);
+      Retrofit.HEAD head = method.getAnnotation(Retrofit.HEAD.class);
       String rawPath = null;
       if (get != null) rawPath = get.value();
       if (put != null) rawPath = put.value();
       if (post != null) rawPath = post.value();
       if (delete != null) rawPath = delete.value();
+      if (head != null) rawPath = head.value();
       return rawPath;
     }
 
@@ -779,6 +790,10 @@ public class RetrofitProcessor extends AbstractProcessor {
 
     public boolean isDelete() {
       return isDelete;
+    }
+
+    public boolean isHead() {
+      return isHead;
     }
 
     public List<String> getAnnotations() {

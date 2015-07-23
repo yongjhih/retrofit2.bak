@@ -75,6 +75,13 @@ public @interface Retrofit {
   }
 
   @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
+  @Target(ElementType.METHOD)
+  public @interface HEAD {
+    String value() default "";
+    String[] permissions() default {};
+  }
+
+  @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
   @Target(ElementType.PARAMETER)
   public @interface Body { // For @Post(@Body JsonString/Model.toJsonString()) in mimetype of "application/json; charset=utf8-8"
   }
