@@ -354,11 +354,12 @@ Retry the request with cache if `RequestException` thats network issue.
 
 ## Installation
 
-via jcenter(in progress):
+via jcenter:
 
 ```java
 repositories {
     jcenter()
+    maven { url "https://dl.bintray.com/yongjhih/maven/" } // keep this line until jcenter accepted including request.
 }
 
 dependencies {
