@@ -148,6 +148,21 @@ public class MainActivity extends AppCompatActivity {
                     return card;
                 })));
         }));
+        adapter.fragments.add(FragmentPage.create().title("8tory").fragment(() -> {
+            return RxCardsFragment.create()
+                .items(Observable.defer(() -> github.repositories("8tory").take(1280).toSortedList((a, b) -> {
+                    return b.stargazers_count - a.stargazers_count;
+                }).flatMap(list -> Observable.from(list)).map(repo -> {
+                    RxCard card = new RxCard();
+                    card.icon = Observable.just(repo.owner.avatar_url);
+                    card.text1 = Observable.just(repo.name);
+                    card.message = Observable.just(repo.description);
+                    card.likeCount = Observable.just(repo.stargazers_count);
+                    card.commentCount = Observable.just(repo.forks_count);
+                    //card.image = Observable.just(contributor.originalPic());
+                    return card;
+                })));
+        }));
         adapter.fragments.add(FragmentPage.create().title("8tory/json2notification").fragment(() -> {
             return RxCardsFragment.create()
                 .items(Observable.defer(() -> github.contributors("8tory", "json2notification").take(1280).map(contributor -> {
