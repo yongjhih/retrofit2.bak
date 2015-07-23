@@ -104,12 +104,30 @@ public @interface Retrofit {
 
   @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
   @Target({ElementType.METHOD, ElementType.TYPE})
-  public @interface RetryHeaders { // For @Headers @GET|@PUT|@POST|@DELETE
+  public @interface RetryHeaders { // For @RetryHeaders @GET|@PUT|@POST|@DELETE, @RetryHeaders class
     String[] value();
     Class<? extends Throwable>[] exceptions() default Throwable.class;
     //Class<? extends ErrorHandler> errorHandler() default ErrorHandler.class;
     //Class<? extends ErrorHandler> onRetry() default ErrorHandler.class;
     //Class<? extends ErrorHandler> onNext() default ErrorHandler.class;
+  }
+
+  @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
+  @Target({ElementType.METHOD, ElementType.TYPE})
+  public @interface ErrorHandler { // For @ErrorHandler @GET|@PUT|@POST|@DELETE, @ErrorHandler class
+    Class<? extends retrofit.ErrorHandler> value() default retrofit.ErrorHandler.class;
+  }
+
+  @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
+  @Target({ElementType.METHOD, ElementType.TYPE})
+  public @interface Converter { // For @Converter @GET|@PUT|@POST|@DELETE, @Converter class
+    Class<? extends retrofit.converter.Converter> value() default retrofit.converter.Converter.class;
+  }
+
+  @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
+  @Target({ElementType.METHOD, ElementType.TYPE})
+  public @interface LogLevel { // For @LogLevel @GET|@PUT|@POST|@DELETE, @LogLevel class
+    retrofit.RestAdapter.LogLevel value() default retrofit.RestAdapter.LogLevel.NONE;
   }
 
   @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor

@@ -201,7 +201,7 @@ public abstract class GitHub {
         return new Retrofit_GitHub();
     }
 
-    public static GitHub create(Converter converter) {
+    public static GitHub create(retrofit.converter.Converter converter) {
         //if (converter == null) {
         //    /*
         //    Gson gson = new GsonBuilder()
