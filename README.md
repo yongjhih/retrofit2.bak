@@ -362,6 +362,26 @@ dependencies {
 }
 ```
 
+## Test
+
+Test github client:
+
+```bash
+./gradlew clean :retrofit2-github:testDebug
+```
+
+All tests:
+
+```bash
+./gradlew clean test
+```
+
+Github sample app:
+
+```bash
+./gradlew clean :retrofit2-github-app:assembleDebug
+```
+
 ## Development
 
 * Support POST, DELTE, PUT: http://www.twitch.tv/yoandrew/v/7918907
