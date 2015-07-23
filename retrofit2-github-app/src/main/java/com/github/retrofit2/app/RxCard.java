@@ -34,4 +34,6 @@ public class RxCard {
     public Observable<Boolean> liked = Observable.empty();
     @Nullable
     public Observable<Integer> likeCount = Observable.empty();
+    @Nullable
+    public Observable<Integer> commentCount = Observable.empty();
 }

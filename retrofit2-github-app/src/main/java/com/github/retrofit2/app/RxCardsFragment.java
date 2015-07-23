@@ -230,6 +230,13 @@ public class RxCardsFragment extends Fragment {
                 likeCountView.setText("" + likeCount);
             });
 
+            commentCount = 0;
+            commentCountView.setText("" + commentCount); // clear
+            ViewObservable.bindView(commentCountView, item.commentCount).subscribe(i -> {
+                commentCount = i;
+                commentCountView.setText("" + commentCount);
+            });
+
             liked = false;
             likeView.setOnClickListener(v -> {}); // clear
             Glide.with(itemView.getContext())

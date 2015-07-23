@@ -152,7 +152,7 @@ public abstract class GitHub {
 
     @GET("/users/{username}/repos")
     @QueryBinding(value = "access_token", binder = AuthorizationBinder.class)
-    public abstract Observable<Repository> repositories(@Header("username") String username);
+    public abstract Observable<Repository> repositoriesBinder(@Header("username") String username);
 
     //@GET("/users/repos") // TODO intercepter // TODO header-binding
     //public abstract Observable<Repository> repositories();
@@ -238,6 +238,17 @@ public abstract class GitHub {
                 .registerTypeAdapter(java.util.Date.class, new com.google.gson.internal.bind.DateTypeAdapter())
                 .create());
         }
+    }
+
+    @GET("/users/{username}/repos")
+    public abstract Observable<List<Repository>> repositorieList(@Path("username") String username);
+
+    public Observable<Repository> repositories(String username) {
+        return repositorieList(username).flatMap(new Func1<List<Repository>, Observable<Repository>>() {
+            @Override public Observable<Repository> call(List<Repository> list) {
+                return Observable.from(list);
+            }
+        });
     }
 
     public static GitHub create() {
