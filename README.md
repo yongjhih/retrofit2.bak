@@ -12,6 +12,8 @@ Contributors..
 
 ![retrofit2](art/retrofit2.png)
 
+[![](art/screenshot-yongjhih.jpg)](https://appetize.io/app/3trwbht63k0rkfmbxbt51h84cr)
+
 retrofit2 turns your REST API into a Java interface.
 
 Inspired by square/retrofit. retrofit2 is re-implemented by compile-time annotation processing that benefit to debugging.
