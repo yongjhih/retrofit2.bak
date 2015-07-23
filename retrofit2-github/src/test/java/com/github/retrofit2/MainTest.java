@@ -79,12 +79,30 @@ public class MainTest {
         assertTrue(contributors.size() > 1);
     }
 
+    /*
+    //tested
     @Test
-    public void testPost() {
+    public void testPostBody() {
+        GitHub github = GitHub.create();
+        Repository localRepo = new Repository();
+        localRepo.name = "tmp";
+        Repository repository = github.createRepository(localRepo).toBlocking().first();
+        assertTrue(repository.name.equals("tmp"));
     }
+    */
+
+    /*
+    //tested
     @Test
     public void testDelete() {
+        GitHub github = GitHub.create();
+        Repository localRepo = new Repository();
+        localRepo.name = "tmp";
+        Response response = github.deleteRepository("yongjhih", "tmp");
+        assertTrue(response.getStatus() == 204);
     }
+    */
+
     @Test
     public void testPut() {
     }
@@ -128,6 +146,7 @@ public class MainTest {
     }
 
     /*
+    //tested
     @Test
     public void testStar() {
         GitHub github = GitHub.create();
@@ -139,6 +158,7 @@ public class MainTest {
         }).toList().toBlocking().single();
     }
 
+    //tested
     @Test
     public void testUnstar() {
         GitHub github = GitHub.create();

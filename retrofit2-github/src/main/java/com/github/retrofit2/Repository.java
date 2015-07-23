@@ -92,10 +92,10 @@ public class Repository {
     public String description;
 
     @JsonField(name = "private")
-    public boolean isPrivate;
+    public Boolean isPrivate;
 
     @JsonField
-    public boolean fork;
+    public Boolean fork;
     @JsonField
     public String url;
     @JsonField
@@ -127,13 +127,13 @@ public class Repository {
     @JsonField
     public int open_issues_count;
     @JsonField
-    public boolean has_issues;
+    public Boolean has_issues;
     @JsonField
-    public boolean has_wiki;
+    public Boolean has_wiki;
     @JsonField
-    public boolean has_pages;
+    public Boolean has_pages;
     @JsonField
-    public boolean has_downloads;
+    public Boolean has_downloads;
     @JsonField
     public String pushed_at;
     @JsonField

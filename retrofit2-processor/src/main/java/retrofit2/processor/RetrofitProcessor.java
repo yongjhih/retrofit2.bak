@@ -587,7 +587,7 @@ public class RetrofitProcessor extends AbstractProcessor {
         String[] queries = fullPath.split("&");
         for (String query : queries) {
           String[] keyValue = query.split("=");
-          map.put(keyValue[0], keyValue[1]);
+          map.put(keyValue[0], "\"" + keyValue[1] + "\"");
         }
       }
 

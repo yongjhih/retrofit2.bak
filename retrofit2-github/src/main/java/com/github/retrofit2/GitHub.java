@@ -186,6 +186,17 @@ public abstract class GitHub {
             @Path("owner") String owner,
             @Path("repo") String repo);
 
+    @POST("/user/repos")
+    public abstract Observable<Repository> createRepository(@Body Repository repository);
+
+    @DELETE("/repos/{owner}/{repo}")
+    public abstract Response deleteRepository(
+            @Path("owner") String owner,
+            @Path("repo") String repo);
+
+    @POST("/orgs/{org}/repos")
+    public abstract Observable<Repository> createRepository(@Query("org") String org, @Body Repository repository);
+
     public static GitHub create() {
         return new Retrofit_GitHub();
     }
