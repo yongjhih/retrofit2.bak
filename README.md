@@ -359,7 +359,6 @@ via jcenter:
 ```java
 repositories {
     jcenter()
-    maven { url "https://dl.bintray.com/yongjhih/maven/" } // keep this line until jcenter accepted including request.
 }
 
 dependencies {
@@ -368,7 +367,7 @@ dependencies {
 }
 ```
 
-or via jitpack:
+or via jitpack (in progress):
 
 ```java
 repositories {
