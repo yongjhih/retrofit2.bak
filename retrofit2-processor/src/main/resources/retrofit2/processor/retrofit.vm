@@ -70,29 +70,36 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
 ## Constructor
 
     public $subclass() {
-        this(null);
-    }
-
-    public $subclass(Converter converter) {
         client = new OkHttpClient();
 
-        this.converter = converter;
-        if (this.converter == null) {
-            try {
-                /**
-                 * Parse JsonArray
-                 * gson.fromJson(jsonString, Wrapper[].class);
-                 * mapper.readValue(jsonString, typeFactory.constructCollectionType(List.class, SomeClass.class));
-                 */
+        try {
 
-                this.converter = new LoganSquareConverter();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+#if ($converter != "")
+    #if ($gsonConverter != "")
+
+            this.converter = new ${converter}(new com.google.gson.Gson());
+
+    #else
+
+            this.converter = new ${converter}();
+
+    #end
+#else
+
+            /**
+             * Parse JsonArray
+             * gson.fromJson(jsonString, Wrapper[].class);
+             * mapper.readValue(jsonString, typeFactory.constructCollectionType(List.class, SomeClass.class));
+             */
+
+            this.converter = new retrofit.converter.LoganSquareConverter();
+
+#end
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-
     }
-
 
 ## Property getters
 
@@ -100,6 +107,30 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
 
     @Override
     ${p.access}${p.type} ${p.getter}(${p.args}) {
+
+        Converter myConverter = this.converter;
+
+#if ($p.converter != "")
+
+        try {
+
+    #if ($p.gsonConverter != "")
+
+            myConverter = new ${p.converter}(new com.google.gson.Gson());
+
+    #else
+
+            myConverter = new ${p.converter}();
+
+    #end
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+#end
+
+        final Converter finalConverter = myConverter;
 
         String _url = "${p.path}";
         if (!_url.startsWith("http://") && !_url.startsWith("https://")) {
@@ -145,7 +176,7 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
         String jsonString = null;
         TypedOutput typedOutput = null;
         try {
-            typedOutput = converter.toBody($p.body);
+            typedOutput = finalConverter.toBody($p.body);
             jsonString = toString(typedOutput);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -296,11 +327,11 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
         #if ($p.typeArgs2 != "")
 
                     Type type = new TypeToken<${p.typeArgs}>(){}.getType();
-                    return (${p.typeArgs}) converter.fromBody(new JsonTypedInput(json), type);
+                    return (${p.typeArgs}) finalConverter.fromBody(new JsonTypedInput(json), type);
 
         #else
 
-                    return (${p.typeArgs}) converter.fromBody(new JsonTypedInput(json), ${p.typeArgs}.class);
+                    return (${p.typeArgs}) finalConverter.fromBody(new JsonTypedInput(json), ${p.typeArgs}.class);
 
         #end
 

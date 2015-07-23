@@ -29,14 +29,16 @@ import retrofit.client.Response;
 import retrofit.Callback;
 
 @Retrofit("https://api.github.com")
-@Headers({
+@Headers({ // optional
     "Accept: application/vnd.github.v3.full+json",
     "User-Agent: Retrofit2"
 })
-@RetryHeaders(
+@RetryHeaders( // optional
     value = "Cache-Control: max-age=640000",
     exceptions = retrofit2.RequestException.class
 )
+@Retrofit.Converter(GsonConverter.class) // optional
+//@Retrofit.Converter(LoganSquareConverter.class) // default
 public abstract class GitHub {
     @GET("/repos/{owner}/{repo}/contributors")
     public abstract Observable<List<Contributor>> contributorList(
@@ -197,21 +199,48 @@ public abstract class GitHub {
     @POST("/orgs/{org}/repos")
     public abstract Observable<Repository> createRepository(@Query("org") String org, @Body Repository repository);
 
-    public static GitHub create() {
-        return new Retrofit_GitHub();
+    @Retrofit.Converter(GsonConverter.class) // optional
+    @GET("/repos/{owner}/{repo}/contributors")
+    public abstract Observable<List<Contributor>> contributorListWithGson(
+            @Path("owner") String owner,
+            @Path("repo") String repo);
+
+    public Observable<Contributor> contributorsWithGson(
+            String owner,
+            String repo) {
+        return contributorListWithGson(owner, repo).flatMap(new Func1<List<Contributor>, Observable<Contributor>>() {
+            @Override public Observable<Contributor> call(List<Contributor> list) {
+                return Observable.from(list);
+            }
+        });
     }
 
-    public static GitHub create(retrofit.converter.Converter converter) {
-        //if (converter == null) {
-        //    /*
-        //    Gson gson = new GsonBuilder()
-        //        .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-        //        //.registerTypeAdapter(Date.class, new DateTypeAdapter())
-        //        .create();
-        //    converter = new GsonConverter(gson);
-        //    */
-        //    converter = new JacksonConverter();
-        //}
-        return new Retrofit_GitHub(converter);
+    @Retrofit.Converter(DateGsonConverter.class) // optional
+    @GET("/repos/{owner}/{repo}/contributors")
+    public abstract Observable<List<Contributor>> contributorListWithDateGson(
+            @Path("owner") String owner,
+            @Path("repo") String repo);
+
+    public Observable<Contributor> contributorsWithDateGson(
+            String owner,
+            String repo) {
+        return contributorList(owner, repo).flatMap(new Func1<List<Contributor>, Observable<Contributor>>() {
+            @Override public Observable<Contributor> call(List<Contributor> list) {
+                return Observable.from(list);
+            }
+        });
+    }
+
+    public static class DateGsonConverter extends GsonConverter {
+        public DateGsonConverter() {
+            super(new com.google.gson.GsonBuilder()
+                .setFieldNamingPolicy(com.google.gson.FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                .registerTypeAdapter(java.util.Date.class, new com.google.gson.internal.bind.DateTypeAdapter())
+                .create());
+        }
+    }
+
+    public static GitHub create() {
+        return new Retrofit_GitHub();
     }
 }

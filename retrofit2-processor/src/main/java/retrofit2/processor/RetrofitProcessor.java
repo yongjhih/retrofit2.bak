@@ -73,6 +73,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
+import javax.lang.model.type.MirroredTypeException;
 
 /**
  * Javac annotation processor (compiler plugin) for value types; user code never references this
@@ -263,6 +264,10 @@ public class RetrofitProcessor extends AbstractProcessor {
     private final Map<String, String> fields;
     private final Map<String, Part> parts;
     private String callbackName;
+    public final String converter;
+    public String gsonConverter = "";
+    public final String errorHandler;
+    public final String logLevel;
 
     Property(
         String name,
@@ -312,6 +317,54 @@ public class RetrofitProcessor extends AbstractProcessor {
       this.headers = buildHeaders(method);
       this.fields = buildFields(method);
       this.parts = buildParts(method);
+      this.converter = buildConverter(method);
+      this.errorHandler = buildErrorHandler(method);
+      this.logLevel = buildLogLevel(method);
+    }
+
+    private String buildConverter(ExecutableElement method) {
+      String converterName = "";
+      Retrofit.Converter converterAnnotation = method.getAnnotation(Retrofit.Converter.class);
+      if (converterAnnotation != null) {
+        TypeMirror converter = null;
+        try {
+          converter = getTypeMirror(processingEnv, converterAnnotation.value());
+        } catch (MirroredTypeException mte) {
+          // http://blog.retep.org/2009/02/13/getting-class-values-from-annotations-in-an-annotationprocessor/
+          converter = mte.getTypeMirror();
+        }
+        converterName = typeSimplifier.simplify(converter);
+        TypeMirror gsonConverterType = getTypeMirror(processingEnv, retrofit.converter.GsonConverter.class);
+        Types typeUtils = processingEnv.getTypeUtils();
+        if (typeUtils.isSubtype(gsonConverterType, converter)) {
+          this.gsonConverter = converterName;
+        }
+      }
+      return converterName;
+    }
+
+    private String buildErrorHandler(ExecutableElement method) {
+      String name = "";
+      Retrofit.ErrorHandler errorHandlerAnnotation = method.getAnnotation(Retrofit.ErrorHandler.class);
+      if (errorHandlerAnnotation != null) {
+        TypeMirror errorHandler = null;
+        try {
+          errorHandler = getTypeMirror(processingEnv, errorHandlerAnnotation.value());
+        } catch (MirroredTypeException mte) {
+          // http://blog.retep.org/2009/02/13/getting-class-values-from-annotations-in-an-annotationprocessor/
+          errorHandler = mte.getTypeMirror();
+        }
+        name = typeSimplifier.simplify(errorHandler);
+      }
+      return name;
+    }
+
+    private String buildLogLevel(ExecutableElement method) {
+      Retrofit.LogLevel logLevelAnnotation = method.getAnnotation(Retrofit.LogLevel.class);
+      if (logLevelAnnotation != null) {
+        return ""; // TODO
+      }
+      return "";
     }
 
     private boolean buildIsObservable(ExecutableElement method) {
@@ -772,6 +825,22 @@ public class RetrofitProcessor extends AbstractProcessor {
       return body;
     }
 
+    public String getConverter() {
+      return converter;
+    }
+
+    public String getGsonConverter() {
+      return gsonConverter;
+    }
+
+    public String getErrorHandler() {
+      return errorHandler;
+    }
+
+    public String getLogLevel() {
+      return logLevel;
+    }
+
     public List<String> getPermissions() {
       return permissions;
     }
@@ -1045,6 +1114,37 @@ public class RetrofitProcessor extends AbstractProcessor {
       vars.retryHeaders = retryHeaderMap;
     }
 
+    Retrofit.Converter converterAnnotation = type.getAnnotation(Retrofit.Converter.class);
+    if (converterAnnotation != null) {
+      TypeMirror converter = null;
+      try {
+        converter = getTypeMirror(converterAnnotation.value());
+      } catch (MirroredTypeException mte) {
+        // http://blog.retep.org/2009/02/13/getting-class-values-from-annotations-in-an-annotationprocessor/
+        converter = mte.getTypeMirror();
+      }
+      vars.converter = typeSimplifier.simplify(converter);
+      TypeMirror gsonConverterType = getTypeMirror(retrofit.converter.GsonConverter.class);
+      if (typeUtils.isSubtype(gsonConverterType, converter)) {
+        vars.gsonConverter = vars.converter;
+      }
+    }
+    Retrofit.ErrorHandler errorHandlerAnnotation = type.getAnnotation(Retrofit.ErrorHandler.class);
+    if (errorHandlerAnnotation != null) {
+      TypeMirror errorHandler = null;
+      try {
+        errorHandler = getTypeMirror(errorHandlerAnnotation.value());
+      } catch (MirroredTypeException mte) {
+        // http://blog.retep.org/2009/02/13/getting-class-values-from-annotations-in-an-annotationprocessor/
+        errorHandler = mte.getTypeMirror();
+      }
+      vars.errorHandler = typeSimplifier.simplify(errorHandler);
+    }
+    Retrofit.LogLevel logLevelAnnotation = type.getAnnotation(Retrofit.LogLevel.class);
+    if (logLevelAnnotation != null) {
+      vars.logLevel = ""; // TODO
+    }
+
     TypeElement parcelable = processingEnv.getElementUtils().getTypeElement("android.os.Parcelable");
     vars.parcelable = parcelable != null
       && processingEnv.getTypeUtils().isAssignable(type.asType(), parcelable.asType());
@@ -1266,8 +1366,16 @@ public class RetrofitProcessor extends AbstractProcessor {
     return getTypeMirror(processingEnv, c);
   }
 
+  private TypeMirror getTypeMirror(String canonicalName) {
+    return getTypeMirror(processingEnv, canonicalName);
+  }
+
   private static TypeMirror getTypeMirror(ProcessingEnvironment processingEnv, Class<?> c) {
-    return processingEnv.getElementUtils().getTypeElement(c.getCanonicalName()).asType();
+    return getTypeMirror(processingEnv, c.getCanonicalName());
+  }
+
+  private static TypeMirror getTypeMirror(ProcessingEnvironment processingEnv, String canonicalName) {
+    return processingEnv.getElementUtils().getTypeElement(canonicalName).asType();
   }
 
   // The @Retrofit type, with a ? for every type.

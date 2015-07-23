@@ -303,4 +303,31 @@ public class MainTest {
         System.out.println(string);
         assertTrue(string.contains("yongjhih"));
     }
+
+    @Test
+    public void testMethodGson() {
+        GitHub github = GitHub.create();
+        List<String> contributors = github.contributorsWithGson("yongjhih", "retrofit2").map(new Func1<Contributor, String>() {
+            @Override public String call(Contributor contributor) {
+                System.out.println(contributor.login);
+                return contributor.login;
+            }
+        }).toList().toBlocking().single();
+        assertTrue(contributors.contains("yongjhih"));
+        assertTrue(contributors.size() > 1);
+    }
+
+    @Test
+    public void testMethodDateGson() {
+        GitHub github = GitHub.create();
+        List<String> contributors = github.contributorsWithDateGson("yongjhih", "retrofit2").map(new Func1<Contributor, String>() {
+            @Override public String call(Contributor contributor) {
+                System.out.println(contributor.login);
+                return contributor.login;
+            }
+        }).toList().toBlocking().single();
+        assertTrue(contributors.contains("yongjhih"));
+        assertTrue(contributors.size() > 1);
+    }
+
 }
