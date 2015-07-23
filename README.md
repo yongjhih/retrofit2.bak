@@ -22,7 +22,7 @@ square/retrofit is a great project, also square/dagger. google/dagger2 is based 
 
 See Also: [![](art/medium-48.jpg)](https://medium.com/@yongjhih/retrofit2-aa2fffd1a3c0)
 
-retrofit2 implemented almost retrofit features. Bonus: [@RetryHeaders](#support-retry-headers-retryheaders), [Global Headers](#global-headers))
+retrofit2 implemented almost retrofit features. Bonus: [@RetryHeaders](#support-retry-headers-retryheaders), [Global Headers](#global-headers)), [@Converter](#custom-converter-for-method)
 
 ```java
 @Retrofit("https://api.github.com")
