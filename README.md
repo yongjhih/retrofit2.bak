@@ -16,13 +16,19 @@ Contributors..
 
 retrofit2 turns your REST API into a Java interface.
 
-Inspired by square/retrofit. retrofit2 is re-implemented by compile-time annotation processing that benefit to debugging.
+square/retrofit is a great project. So, why reinvent the wheel? Retrofit 2 is the first to implement the full stack with generated code. The guiding principle is to generate code that mimics the code that traceable and performant as it can be.
 
-square/retrofit is a great project, also square/dagger. google/dagger2 is based on the same reason to re-implement.
+google/dagger2 has also re-implemented square/dagger.
+
+Retrofit 2  has implemented almost retrofit’s features. And bonus:
 
 See Also: [![](art/medium-48.jpg)](https://medium.com/@yongjhih/retrofit2-aa2fffd1a3c0)
 
-retrofit2 implemented almost retrofit features. Bonus: [@RetryHeaders](#support-retry-headers-retryheaders), [Global Headers](#global-headers)), [@Converter](#custom-converter-for-method)
+Retrofit 2  has implemented almost retrofit’s features. And bonus:
+
+* [@RetryHeaders](#support-retry-headers-retryheaders)
+* [Global Headers](#global-headers)
+* [@Converter](#custom-converter-for-method)
 
 ```java
 @Retrofit("https://api.github.com")
