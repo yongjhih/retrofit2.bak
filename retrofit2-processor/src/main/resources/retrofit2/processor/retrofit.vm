@@ -52,6 +52,7 @@ import retrofit2.TypeToken;
 import retrofit2.RequestException;
 import retrofit.RetrofitError;
 import retrofit.client.Header;
+import retrofit.RestAdapter.LogLevel;
 
 import rx.schedulers.*;
 
@@ -66,6 +67,7 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
     public static final String _CHARSET_UTF8 = "charset=utf-8";
     public static final String _MIME_APP_JSON_CHARSET_UTF8 = _MIME_APP_JSON + "; " + _CHARSET_UTF8;
     Converter converter;
+    retrofit.RestAdapter.LogLevel logLevel;
 
 ## Constructor
 
@@ -99,6 +101,7 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        this.logLevel = retrofit.RestAdapter.LogLevel.$logLevel;
     }
 
 ## Property getters
@@ -264,7 +267,17 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
 
     #end
 
-        Observable<com.squareup.okhttp.Response> responseCachedObs = Observable.create(new OnSubscribeResponse(client, requestBuilder.build())).doOnNext(new Action1<com.squareup.okhttp.Response>() {
+        Request request = requestBuilder.build();
+
+        if (logLevel.log()) {
+            // Log the request data.
+            try {
+              request = logAndReplaceRequest("HTTP", request);
+            } catch (IOException e) {
+            }
+        }
+
+        Observable<com.squareup.okhttp.Response> responseCachedObs = Observable.create(new OnSubscribeResponse(client, request)).doOnNext(new Action1<com.squareup.okhttp.Response>() {
             @Override public void call(com.squareup.okhttp.Response response) {
             }
 
@@ -512,4 +525,119 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
     }
     return headerList;
   }
+
+  /** Simple logging abstraction for debug messages. */
+  public interface Log {
+    /** Log a debug message to the appropriate console. */
+    void log(String message);
+
+    /** A {@link Log} implementation which does not log anything. */
+    Log NONE = new Log() {
+      @Override public void log(String message) {
+      }
+    };
+  }
+
+  // TODO @Log()
+  private Log log = new Log() {
+      @Override public void log(String message) {
+          System.out.println(message);
+      }
+  };
+
+  /** Log request headers and body. Consumes request body and returns identical replacement. */
+  Request logAndReplaceRequest(String name, Request request) throws IOException {
+    log.log(String.format("---> %s %s %s", name, request.method(), request.urlString()));
+
+    if (logLevel.ordinal() >= LogLevel.HEADERS.ordinal()) {
+      log.log(request.headers().toString());
+
+      String bodySize = "no";
+      RequestBody body = request.body();
+      if (body != null) {
+        MediaType type = body.contentType();
+        if (type != null) {
+          log.log("Content-Type: " + type);
+        }
+
+        long bodyLength = body.contentLength();
+        bodySize = bodyLength + "-byte";
+        if (bodyLength != -1) {
+          log.log("Content-Length: " + bodyLength);
+        }
+
+        if (logLevel.ordinal() >= LogLevel.FULL.ordinal()) {
+          if (request.headers().size() > 0) {
+            log.log("");
+            // TODO body
+          }
+        } else if (logLevel.ordinal() >= LogLevel.HEADERS_AND_ARGS.ordinal()) {
+          // TODO args
+        }
+      }
+
+      log.log(String.format("---> END %s (%s body)", name, bodySize));
+    }
+
+    return request;
+  }
+
+  /** Log response headers and body. Consumes response body and returns identical replacement. */
+  /*
+  private Response logAndReplaceResponse(String url, Response response, long elapsedTime)
+      throws IOException {
+    log.log(String.format("<--- HTTP %s %s (%sms)", response.getStatus(), url, elapsedTime));
+
+    if (logLevel.ordinal() >= LogLevel.HEADERS.ordinal()) {
+      for (Header header : response.getHeaders()) {
+        log.log(header.toString());
+      }
+
+      long bodySize = 0;
+      TypedInput body = response.getBody();
+      if (body != null) {
+        bodySize = body.length();
+
+        if (logLevel.ordinal() >= LogLevel.FULL.ordinal()) {
+          if (!response.getHeaders().isEmpty()) {
+            log.log("");
+          }
+
+          if (!(body instanceof TypedByteArray)) {
+            // Read the entire response body so we can log it and replace the original response
+            response = Utils.readBodyToBytesIfNecessary(response);
+            body = response.getBody();
+          }
+
+          byte[] bodyBytes = ((TypedByteArray) body).getBytes();
+          bodySize = bodyBytes.length;
+          String bodyMime = body.mimeType();
+          String bodyCharset = MimeUtil.parseCharset(bodyMime, "UTF-8");
+          log.log(new String(bodyBytes, bodyCharset));
+        }
+      }
+
+      log.log(String.format("<--- END HTTP (%s-byte body)", bodySize));
+    }
+
+    return response;
+  }
+
+  private void logResponseBody(TypedInput body, Object convert) {
+    if (logLevel.ordinal() == LogLevel.HEADERS_AND_ARGS.ordinal()) {
+      log.log("<--- BODY:");
+      log.log(convert.toString());
+    }
+  }
+  */
+
+  /** Log an exception that occurred during the processing of a request or response. */
+  void logException(Throwable t, String url) {
+    log.log(String.format("---- ERROR %s", url != null ? url : ""));
+    StringWriter sw = new StringWriter();
+    t.printStackTrace(new PrintWriter(sw));
+    log.log(sw.toString());
+    log.log("---- END ERROR");
+  }
+
 }

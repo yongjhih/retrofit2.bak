@@ -142,7 +142,7 @@ class RetrofitTemplateVars extends TemplateVars {
   String converter = "";
   String gsonConverter = "";
   String errorHandler = "";
-  String logLevel = "";
+  retrofit.RestAdapter.LogLevel logLevel = retrofit.RestAdapter.LogLevel.NONE;
 
   /**
    * The simple names of validation methods (marked {@code @Retrofit.Validate}) in the Retrofit

@@ -1142,7 +1142,7 @@ public class RetrofitProcessor extends AbstractProcessor {
     }
     Retrofit.LogLevel logLevelAnnotation = type.getAnnotation(Retrofit.LogLevel.class);
     if (logLevelAnnotation != null) {
-      vars.logLevel = ""; // TODO
+      vars.logLevel = logLevelAnnotation.value();
     }
 
     TypeElement parcelable = processingEnv.getElementUtils().getTypeElement("android.os.Parcelable");
