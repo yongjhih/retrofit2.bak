@@ -30,6 +30,8 @@ Retrofit 2  has implemented almost retrofit’s features. And bonus:
 * [Global Headers](#global-headers)
 * [@Converter](#custom-converter-for-method)
 
+# Usage
+
 ```java
 @Retrofit("https://api.github.com")
 public abstract class GitHub {
