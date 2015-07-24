@@ -34,7 +34,7 @@ Retrofit 2 has implemented almost retrofit’s features. And bonus:
 @Retrofit("https://api.github.com")
 public abstract class GitHub {
   @GET("/users/{user}/repos")
-  public abstract Repo repos(@Path("user") String user);
+  public abstract List<Repo> repos(@Path("user") String user);
 
   public static GitHub create() {
     return new Retrofit_GitHub();
