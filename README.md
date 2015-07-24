@@ -20,11 +20,9 @@ square/retrofit is a great project. So, why reinvent the wheel? Retrofit 2 is th
 
 google/dagger2 has also re-implemented square/dagger.
 
-Retrofit 2  has implemented almost retrofit’s features. And bonus:
-
 See Also: [![](art/medium-48.jpg)](https://medium.com/@yongjhih/retrofit2-aa2fffd1a3c0)
 
-Retrofit 2  has implemented almost retrofit’s features. And bonus:
+Retrofit 2 has implemented almost retrofit’s features. And bonus:
 
 * [@RetryHeaders](#support-retry-headers-retryheaders)
 * [Global Headers](#global-headers)
