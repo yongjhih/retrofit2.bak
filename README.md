@@ -49,7 +49,7 @@ GitHub github = GitHub.create();
 Each call on the generated instance of GitHub makes an HTTP request to the remote webserver.
 
 ```java
-github.repos("octocat").forEach(System.out::println);
+List<Repo> repos = github.repos("octocat");
 ```
 
 Use annotations to describe the HTTP request:
