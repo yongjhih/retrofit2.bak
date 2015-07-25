@@ -71,6 +71,7 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
     Converter converter;
     retrofit.RestAdapter.LogLevel logLevel;
     retrofit.RequestInterceptor requestInterceptor = retrofit.RequestInterceptor.NONE;
+    retrofit.ErrorHandler errorHandler = retrofit.ErrorHandler.DEFAULT;
 
 ## Constructor
 
@@ -101,12 +102,24 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
 
 #end
 
-            this.requestInterceptor = new $requestInterceptor();
-
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
         this.logLevel = retrofit.RestAdapter.LogLevel.$logLevel;
+
+#if ($requestInterceptor != "")
+
+        this.requestInterceptor = new $requestInterceptor();
+
+#end
+
+#if ($errorHandler != "")
+
+        this.errorHandler = new $errorHandler();
+
+#end
+
     }
 
 ## Property getters
@@ -172,6 +185,7 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
             bodyString = toString(typedOutput);
         } catch (Exception e) {
             throw new RuntimeException(e);
+            //throw retrofit.RetrofitError.unexpectedError(_finalUrl, e);
         }
         //if (bodyString == null) throw new NullPointerException();
         requestBuilder.post(RequestBody.create(MediaType.parse(typedOutput.mimeType()), bodyString));
@@ -306,7 +320,8 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
 
     #end
 
-        }).cache();
+        })
+        .cache();
 
     #if (!$p.responseType)
         #if ($p.observable)
@@ -328,7 +343,8 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
                 try {
                     return response.body().string();
                 } catch (Exception e) {
-                    throw new RuntimeException(e);
+                    //throw new RuntimeException(e);
+                    throw retrofit.RetrofitError.unexpectedError(_finalUrl, e);
                 }
             }
         }).filter(new Func1<String, Boolean>() {
@@ -355,7 +371,8 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
         #end
 
                 } catch (Exception e) {
-                    throw new RuntimeException(e);
+                    //throw new RuntimeException(e);
+                    throw retrofit.RetrofitError.unexpectedError(_finalUrl, e);
                 }
             }
         }).filter(new Func1<$p.typeArgs, Boolean>() {
@@ -375,23 +392,77 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
     #if ($p.blocking)
         #if ($p.responseType)
 
-        return retrofitResponseObs.subscribeOn(Schedulers.io()).toBlocking().single();
+        return retrofitResponseObs
+
+        #if ($errorHandler != "")
+
+            .onErrorResumeNext(new Func1<Throwable, Observable<com.squareup.okhttp.Response>>() {
+                @Override public Observable<com.squareup.okhttp.Response> call(Throwable e) {
+                    retrofit.RetrofitError retrofitError = null;
+                    if (e instanceof !retrofit.RetrofitError) {
+                        retrofitError = (retrofit.RetrofitError) e;
+                    } else {
+                        retrofitError = new retrofit.RetrofitError.unexpectedError(_finalUrl, e);
+                    }
+                    return Observable.error(errorHanlder.handleError(retrofitError));
+                }
+            })
+
+        #end
+
+            .subscribeOn(Schedulers.io()).toBlocking().single();
 
         #else
 
-        return obs.subscribeOn(Schedulers.io()).toBlocking().single();
+        return obs
+
+        #if ($errorHandler != "")
+
+            .onErrorResumeNext(new Func1<Throwable, Observable<com.squareup.okhttp.Response>>() {
+                @Override public Observable<com.squareup.okhttp.Response> call(Throwable e) {
+                    retrofit.RetrofitError retrofitError = null;
+                    if (e instanceof !retrofit.RetrofitError) {
+                        retrofitError = (retrofit.RetrofitError) e;
+                    } else {
+                        retrofitError = new retrofit.RetrofitError.unexpectedError(_finalUrl, e);
+                    }
+                    return Observable.error(errorHanlder.handleError(retrofitError));
+                }
+            })
+
+        #end
+
+            .subscribeOn(Schedulers.io()).toBlocking().single();
 
         #end
     #elseif ($p.callback)
         #if ($p.responseType) // Callback<Response>
 
-        retrofitResponseObs.subscribeOn(Schedulers.io()).subscribe(new Action1<$p.typeArgs>() {
+        retrofitResponseObs
+
+        #if ($errorHandler != "")
+
+            .onErrorResumeNext(new Func1<Throwable, Observable<com.squareup.okhttp.Response>>() {
+                @Override public Observable<com.squareup.okhttp.Response> call(Throwable e) {
+                    retrofit.RetrofitError retrofitError = null;
+                    if (e instanceof !retrofit.RetrofitError) {
+                        retrofitError = (retrofit.RetrofitError) e;
+                    } else {
+                        retrofitError = new retrofit.RetrofitError.unexpectedError(_finalUrl, e);
+                    }
+                    return Observable.error(errorHanlder.handleError(retrofitError));
+                }
+            })
+
+        #end
+
+            .subscribeOn(Schedulers.io()).subscribe(new Action1<$p.typeArgs>() {
             @Override public void call($p.typeArgs object) {
                 ${p.callbackName}.success(object, object);
             }
         }, new Action1<Throwable>() {
             @Override public void call(Throwable e) {
-                ${p.callbackName}.failure(RetrofitError.unexpectedError(_finalUrl, e));
+                ${p.callbackName}.failure(retrofit.RetrofitError.unexpectedError(_finalUrl, e));
             }
         });
 
@@ -402,12 +473,30 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
                 ${p.callbackName}.success(object, response);
                 return object;
             }
-        }).subscribeOn(Schedulers.io()).subscribe(new Action1<$p.typeArgs>() {
+        })
+
+        #if ($errorHandler != "")
+
+        .onErrorResumeNext(new Func1<Throwable, Observable<com.squareup.okhttp.Response>>() {
+            @Override public Observable<com.squareup.okhttp.Response> call(Throwable e) {
+                retrofit.RetrofitError retrofitError = null;
+                if (e instanceof !retrofit.RetrofitError) {
+                    retrofitError = (retrofit.RetrofitError) e;
+                } else {
+                    retrofitError = new retrofit.RetrofitError.unexpectedError(_finalUrl, e);
+                }
+                return Observable.error(errorHanlder.handleError(retrofitError));
+            }
+        })
+
+        #end
+
+        .subscribeOn(Schedulers.io()).subscribe(new Action1<$p.typeArgs>() {
             @Override public void call($p.typeArgs object) {
             }
         }, new Action1<Throwable>() {
             @Override public void call(Throwable e) {
-                ${p.callbackName}.failure(RetrofitError.unexpectedError(_finalUrl, e));
+                ${p.callbackName}.failure(retrofit.RetrofitError.unexpectedError(_finalUrl, e));
             }
         });
 
@@ -419,7 +508,25 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
 
         #else
 
-        return obs;
+        return obs
+
+        #if ($errorHandler != "")
+
+        .onErrorResumeNext(new Func1<Throwable, Observable<com.squareup.okhttp.Response>>() {
+            @Override public Observable<com.squareup.okhttp.Response> call(Throwable e) {
+                retrofit.RetrofitError retrofitError = null;
+                if (e instanceof !retrofit.RetrofitError) {
+                    retrofitError = (retrofit.RetrofitError) e;
+                } else {
+                    retrofitError = new retrofit.RetrofitError.unexpectedError(_finalUrl, e);
+                }
+                return Observable.error(errorHanlder.handleError(retrofitError));
+            }
+        })
+
+        #end
+
+            ;
 
         #end
     #end
