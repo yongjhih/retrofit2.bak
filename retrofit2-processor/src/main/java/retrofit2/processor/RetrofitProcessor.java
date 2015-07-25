@@ -693,7 +693,7 @@ public class RetrofitProcessor extends AbstractProcessor {
           continue;
         }
 
-        String key = query.value().equals("") ? parameter.getSimpleName().toString() : query.value();
+        String key = value.equals("") ? parameter.getSimpleName().toString() : value;
         map.put(key, parameter.getSimpleName().toString());
       }
 

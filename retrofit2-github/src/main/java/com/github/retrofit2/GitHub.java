@@ -13,8 +13,13 @@
  */
 package com.github.retrofit2;
 
-import retrofit.http.Retrofit;
-import retrofit.http.Retrofit.*;
+import retrofit.http.*;
+import retrofit.http.Retrofit.RetryHeaders;
+import retrofit.http.Retrofit.ErrorHandler;
+import retrofit.http.Retrofit.RequestInterceptor;
+import retrofit.http.Retrofit.LogLevel;
+import retrofit.http.Retrofit.Bindable;
+import retrofit.http.Retrofit.QueryBinding;
 
 import rx.Observable;
 import java.io.File;
@@ -29,7 +34,7 @@ import retrofit.client.Response;
 import retrofit.Callback;
 
 @Retrofit("https://api.github.com")
-@Headers({ // optional
+@retrofit.http.Retrofit.Headers({ // optional
     "Accept: application/vnd.github.v3.full+json",
     "User-Agent: Retrofit2"
 })
@@ -92,13 +97,13 @@ public abstract class GitHub {
 
     @Multipart
     @PUT("/user/photo")
-    public abstract Observable<Contributor> updateUser(@Part(value = "photo", mimeType = "image/png") File photo, @Part("description") String description);
+    public abstract Observable<Contributor> updateUser(@retrofit.http.Retrofit.Part(value = "photo", mimeType = "image/png") File photo, @Part("description") String description);
     @Multipart
     @PUT("/user/photo")
     public abstract Observable<Contributor> updateUserWithTypedFile(@Part("photo") TypedFile photo, @Part("description") String description);
     @Multipart
     @PUT("/user/photo")
-    public abstract Observable<Contributor> updateUserWithTypedStringAnootation(@Part("photo") TypedFile photo, @Part(value = "description", mimeType = "application/json") String description);
+    public abstract Observable<Contributor> updateUserWithTypedStringAnootation(@Part("photo") TypedFile photo, @retrofit.http.Retrofit.Part(value = "description", mimeType = "application/json") String description);
     @Multipart
     @PUT("/user/photo")
     public abstract Observable<Contributor> updateUserWithTypedString(@Part("photo") TypedFile photo, @Part("description") TypedString description);
