@@ -321,7 +321,7 @@ class GitHub {
 
 Note that if the return exception is checked, it must be declared on the interface method. It is recommended that you pass the supplied RetrofitError as the cause to any new exceptions you throw.
 
-## LOGGING (in progress)
+## LOGGING
 
 If you need to take a closer look at the requests and responses you can easily add logging levels to the `Retrofit_GitHub` with the `LogLevel` property. The possible logging levels are `BASIC`, `FULL`, `HEADERS`, and `NONE`.
 
@@ -329,7 +329,7 @@ The following code shows the addition of a full log level which will log the hea
 
 ```java
 @Retrofit("https://api.github.com")
-@LogLevel(Retrofit.LogLevel.FULL)
+@LogLevel(retrofit.RestAdapter.LogLevel.FULL)
 class GitHub {
     // ..
 }
