@@ -352,11 +352,14 @@ public abstract class GitHub {
 
 Retry the request with cache if `RequestException` thats network issue.
 
-## Support Interceptor: `@RequestInterceptor` (in progress)
+## Support Interceptor: `@RequestInterceptor`
 
 ```java
 @Retrofit("https://api.github.com")
 @RequestInterceptor(MyRequestInterceptor.class)
+public abstract class GitHub {
+    // ..
+}
 ```
 
 ## Installation
