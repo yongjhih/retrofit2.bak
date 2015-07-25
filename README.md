@@ -9,6 +9,7 @@
 [![](https://avatars0.githubusercontent.com/u/5761889?v=3&s=48)](https://github.com/Wendly)
 [![](https://avatars3.githubusercontent.com/u/213736?v=3&s=48)](https://github.com/yongjhih)
 Contributors..
+[![](art/medium-48.jpg)](https://medium.com/@yongjhih/retrofit2-aa2fffd1a3c0)
 
 ![retrofit2](art/retrofit2.png)
 
@@ -20,15 +21,15 @@ square/retrofit is a great project. So, why reinvent the wheel? Retrofit 2 is th
 
 google/dagger2 has also re-implemented square/dagger.
 
-See Also: [![](art/medium-48.jpg)](https://medium.com/@yongjhih/retrofit2-aa2fffd1a3c0)
-
 Retrofit 2 has implemented almost retrofit’s features. And bonus:
 
 * [@RetryHeaders](#support-retry-headers-retryheaders)
 * [Global Headers](#global-headers)
 * [@Converter](#custom-converter-for-method)
 
-[Mirgration of Retrofit2](#migration)
+For retrofit1 users: [Migration](#migration).
+
+And here is [Live Demo](https://appetize.io/app/3trwbht63k0rkfmbxbt51h84cr).
 
 # Usage
 
@@ -321,6 +322,18 @@ class GitHub {
 }
 ```
 
+```java
+public class MyErrorHandler implements ErrorHandler {
+    @Override public Throwable handleError(RetrofitError cause) {
+        Response r = cause.getResponse();
+        if (r != null && r.getStatus() == 401) {
+            return new RuntimeException("401", cause);
+        }
+        return cause;
+    }
+}
+```
+
 Note that if the return exception is checked, it must be declared on the interface method. It is recommended that you pass the supplied RetrofitError as the cause to any new exceptions you throw.
 
 ## LOGGING
@@ -331,35 +344,32 @@ The following code shows the addition of a full log level which will log the hea
 
 ```java
 @Retrofit("https://api.github.com")
-@LogLevel(retrofit.RestAdapter.LogLevel.FULL)
-class GitHub {
+@LogLevel(LogLevel.FULL)
+abstract class GitHub {
     // ..
 }
 ```
 
-## Support Retry Headers: `@RetryHeaders`
+## Support `@RetryHeaders`
 
 For Retry Stale example:
 
 ```java
 @Retrofit("https://api.github.com")
-@RetryHeaders(
-    value = "Cache-Control: max-age=640000",
-    exceptions = retrofit2.RequestException.class
-)
-public abstract class GitHub {
+@RetryHeaders("Cache-Control: max-age=640000")
+abstract class GitHub {
     // ..
 }
 ```
 
-Retry the request with cache if `RequestException` thats network issue.
+Retry the request with cache if network issue.
 
-## Support Interceptor: `@RequestInterceptor`
+## Support `@RequestInterceptor`
 
 ```java
 @Retrofit("https://api.github.com")
 @RequestInterceptor(MyRequestInterceptor.class)
-public abstract class GitHub {
+abstract class GitHub {
     // ..
 }
 ```
@@ -374,7 +384,7 @@ For example:
 
 ```java
 @Retrofit("https://api.github.com") // 1. Add this line
-public abstract class GitHub { // 2. Change to abstract class
+abstract class GitHub { // 2. Change to abstract class
   @GET("/users/{user}/repos")
   List<Repo> listRepos(@Path("user") String user);
   public static GitHub create() { return new Retrofit_GitHub(); } // 3. Add creator
@@ -412,7 +422,7 @@ dependencies {
 }
 ```
 
-## Demonstration
+## Live Demo
 
 * https://appetize.io/app/3trwbht63k0rkfmbxbt51h84cr
 
