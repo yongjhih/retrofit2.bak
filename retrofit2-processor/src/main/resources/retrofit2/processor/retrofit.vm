@@ -171,21 +171,22 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
 
         final String _finalUrl = _url;
 
+        String bodyString = null;
+
     #if ($p.get)
 
     #elseif ($p.post)
         #if ($p.body && $p.body != "")
 
-        String jsonString = null;
         TypedOutput typedOutput = null;
         try {
             typedOutput = finalConverter.toBody($p.body);
-            jsonString = toString(typedOutput);
+            bodyString = toString(typedOutput);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        //if (jsonString == null) throw new NullPointerException();
-        requestBuilder.post(RequestBody.create(MediaType.parse(typedOutput.mimeType()), jsonString));
+        //if (bodyString == null) throw new NullPointerException();
+        requestBuilder.post(RequestBody.create(MediaType.parse(typedOutput.mimeType()), bodyString));
 
         #elseif (!$p.fields.isEmpty())
 
@@ -205,14 +206,20 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
 
         MultipartBuilder partsBuilder = new MultipartBuilder().type(MultipartBuilder.FORM);
 
+##        String value == null;
+##        MediaType mediaType = null;
+
             #foreach ($part in $p.parts.entrySet())
                 #if ($part.value.typedFile)
 
-                // TypedFile
         partsBuilder.addPart(Headers.of("Content-Disposition", "form-data; name=\"${part.key}\""),
             RequestBody.create(MediaType.parse(${part.value.name}.mimeType()), ${part.value.name}.file()));
 
                 #elseif ($part.value.typedString)
+
+##       mediaType = MediaType.parse(${part.value.name}.mimeType());
+##       toString(${part.value.name});
+##       bodyStringBuilder.append(value);
 
         partsBuilder.addPart(Headers.of("Content-Disposition", "form-data; name=\"${part.key}\""),
             RequestBody.create(MediaType.parse(${part.value.name}.mimeType()), ${part.value.name}.toString()));
@@ -222,13 +229,14 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
         partsBuilder.addPart(Headers.of("Content-Disposition", "form-data; name=\"${part.key}\""),
             RequestBody.create(MediaType.parse(${part.value.name}.mimeType()), ${part.value.name}.getBytes()));
 
+## new String(bodyBytes, bodyCharset);
+
                 #elseif ($part.value.mimeType != "")
 
-                // File elseif (part.value.isFile)
+                ## elseif ($part.value.file)
 
         partsBuilder.addPart(Headers.of("Content-Disposition", "form-data; name=\"${part.key}\""),
             RequestBody.create(MediaType.parse("${part.value.mimeType}"), ${part.value.name}));
-
 
                 #else
 
@@ -272,7 +280,7 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
         if (logLevel.log()) {
             // Log the request data.
             try {
-              request = logAndReplaceRequest("HTTP", request);
+              request = logAndReplaceRequest("HTTP", request, bodyString);
             } catch (IOException e) {
             }
         }
@@ -335,7 +343,9 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
             @Override public $p.typeArgs call(String json) {
                 // TODO Using RetrofitConveter
                 try {
-                    System.out.println(json);
+                    if (logLevel.ordinal() >= LogLevel.FULL.ordinal()) {
+                        log.log(json);
+                    }
 
         #if ($p.typeArgs2 != "")
 
@@ -546,40 +556,43 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
   };
 
   /** Log request headers and body. Consumes request body and returns identical replacement. */
-  Request logAndReplaceRequest(String name, Request request) throws IOException {
-    log.log(String.format("---> %s %s %s", name, request.method(), request.urlString()));
+  Request logAndReplaceRequest(String name, Request request, String bodyString) throws IOException {
+      log.log(String.format("---> %s %s %s", name, request.method(), request.urlString()));
 
-    if (logLevel.ordinal() >= LogLevel.HEADERS.ordinal()) {
-      log.log(request.headers().toString());
+      if (logLevel.ordinal() >= LogLevel.HEADERS.ordinal()) {
+          log.log(request.headers().toString());
 
-      String bodySize = "no";
-      RequestBody body = request.body();
-      if (body != null) {
-        MediaType type = body.contentType();
-        if (type != null) {
-          log.log("Content-Type: " + type);
-        }
+          String bodySize = "no";
+          RequestBody body = request.body();
+          if (body != null) {
+              MediaType type = body.contentType();
+              if (type != null) {
+                  log.log("Content-Type: " + type);
+              }
 
-        long bodyLength = body.contentLength();
-        bodySize = bodyLength + "-byte";
-        if (bodyLength != -1) {
-          log.log("Content-Length: " + bodyLength);
-        }
+              long bodyLength = body.contentLength();
+              bodySize = bodyLength + "-byte";
+              if (bodyLength != -1) {
+                  log.log("Content-Length: " + bodyLength);
+              }
 
-        if (logLevel.ordinal() >= LogLevel.FULL.ordinal()) {
-          if (request.headers().size() > 0) {
-            log.log("");
-            // TODO body
+              if (logLevel.ordinal() >= LogLevel.FULL.ordinal()) {
+                  if (request.headers().size() > 0) {
+                      log.log("");
+                  }
+                  log.log(bodyString);
+              } else if (logLevel.ordinal() >= LogLevel.HEADERS_AND_ARGS.ordinal()) {
+                  if (request.headers().size() > 0) {
+                      log.log("---> REQUEST:");
+                  }
+                  // TODO args
+              }
           }
-        } else if (logLevel.ordinal() >= LogLevel.HEADERS_AND_ARGS.ordinal()) {
-          // TODO args
-        }
+
+          log.log(String.format("---> END %s (%s body)", name, bodySize));
       }
 
-      log.log(String.format("---> END %s (%s body)", name, bodySize));
-    }
-
-    return request;
+      return request;
   }
 
   /** Log response headers and body. Consumes response body and returns identical replacement. */
