@@ -184,6 +184,12 @@ public @interface Retrofit {
       Class<? extends Bindable> binder() default Bindable.class;
   }
 
+  @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
+  @Target({ElementType.TYPE, ElementType.METHOD})
+  public @interface RequestInterceptor {
+      Class<? extends retrofit.RequestInterceptor> value() default retrofit.RequestInterceptor.class;
+  }
+
   public static interface Bindable<T> extends Func1<T, String> {
       public String call(T t);
   }

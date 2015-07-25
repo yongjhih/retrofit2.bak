@@ -1189,6 +1189,17 @@ public class RetrofitProcessor extends AbstractProcessor {
     if (logLevelAnnotation != null) {
       vars.logLevel = logLevelAnnotation.value();
     }
+    Retrofit.RequestInterceptor requestInterceptorAnnotation = type.getAnnotation(Retrofit.RequestInterceptor.class);
+    if (requestInterceptorAnnotation != null) {
+      TypeMirror requestInterceptor = null;
+      try {
+        requestInterceptor = getTypeMirror(requestInterceptorAnnotation.value());
+      } catch (MirroredTypeException mte) {
+        // http://blog.retep.org/2009/02/13/getting-class-values-from-annotations-in-an-annotationprocessor/
+        requestInterceptor = mte.getTypeMirror();
+      }
+      vars.requestInterceptor = typeSimplifier.simplify(requestInterceptor);
+    }
 
     TypeElement parcelable = processingEnv.getElementUtils().getTypeElement("android.os.Parcelable");
     vars.parcelable = parcelable != null

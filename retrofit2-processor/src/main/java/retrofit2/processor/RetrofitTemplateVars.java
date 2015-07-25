@@ -144,6 +144,8 @@ class RetrofitTemplateVars extends TemplateVars {
   String errorHandler = "";
   retrofit.RestAdapter.LogLevel logLevel = retrofit.RestAdapter.LogLevel.NONE;
 
+  String requestInterceptor = "";
+
   /**
    * The simple names of validation methods (marked {@code @Retrofit.Validate}) in the Retrofit
    * class. (Currently, this set is either empty or a singleton.)

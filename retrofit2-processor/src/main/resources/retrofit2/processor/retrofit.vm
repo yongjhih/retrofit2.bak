@@ -53,6 +53,8 @@ import retrofit2.RequestException;
 import retrofit.RetrofitError;
 import retrofit.client.Header;
 import retrofit.RestAdapter.LogLevel;
+import com.squareup.okhttp.HttpUrl;
+import retrofit.RequestInterceptor;
 
 import rx.schedulers.*;
 
@@ -68,6 +70,7 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
     public static final String _MIME_APP_JSON_CHARSET_UTF8 = _MIME_APP_JSON + "; " + _CHARSET_UTF8;
     Converter converter;
     retrofit.RestAdapter.LogLevel logLevel;
+    retrofit.RequestInterceptor requestInterceptor = retrofit.RequestInterceptor.NONE;
 
 ## Constructor
 
@@ -97,6 +100,8 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
             this.converter = new retrofit.converter.LoganSquareConverter();
 
 #end
+
+            this.requestInterceptor = new $requestInterceptor();
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -140,36 +145,19 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
             _url = "${baseUrl}" + _url;
         }
 
-    #if (!$p.queries.isEmpty())
+        HttpUrl.Builder httpUrlBuilder = HttpUrl.parse(_url).newBuilder();
 
-        StringBuilder _sb = new StringBuilder();
-        _sb.append(_url);
-        _sb.append("?");
+    #foreach ($query in $p.queries.entrySet())
 
-        #foreach ($query in $p.queries.entrySet())
-
-        _sb.append("${query.key}");
-        _sb.append("=");
-        _sb.append($query.value);
-
-            #if ($foreach.hasNext)
-
-        _sb.append("&");
-
-            #end
-        #end
-
-        _url = _sb.toString();
-
-        Request.Builder requestBuilder = new Request.Builder().url(_url);
-
-    #else
-
-        Request.Builder requestBuilder = new Request.Builder().url(_url);
+        httpUrlBuilder.addQueryParameter("${query.key}", $query.value);
 
     #end
 
-        final String _finalUrl = _url;
+        HttpUrl httpUrl = httpUrlBuilder.build();
+
+        Request.Builder requestBuilder = new Request.Builder().url(httpUrl);
+
+        final String _finalUrl = httpUrl.toString();
 
         String bodyString = null;
 
@@ -276,6 +264,14 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
     #end
 
         Request request = requestBuilder.build();
+
+    #if ($requestInterceptor != "")
+
+        SimpleRequestFacade requestFacade = new SimpleRequestFacade(request);
+        requestInterceptor.intercept(requestFacade);
+        request = requestFacade.request();
+
+    #end
 
         if (logLevel.log()) {
             // Log the request data.
@@ -494,66 +490,108 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
         return string;
     }
 
-  static retrofit.client.Response parseResponse(com.squareup.okhttp.Response response) {
-    return new retrofit.client.Response(response.request().urlString(), response.code(), response.message(),
-        createHeaders(response.headers()), createResponseBody(response.body()));
-  }
+    public static class SimpleRequestFacade implements RequestInterceptor.RequestFacade {
+        Request.Builder requestBuilder;
+        HttpUrl.Builder httpUrlBuilder;
+        String path;
 
-  private static TypedInput createResponseBody(final ResponseBody body) {
-    try {
-      if (body.contentLength() == 0) {
-        return null;
-      }
-    } catch (IOException e) {
-      return null;
-    }
-    return new TypedInput() {
-      @Override public String mimeType() {
-        MediaType mediaType = body.contentType();
-        return mediaType == null ? null : mediaType.toString();
-      }
-
-      @Override public long length() {
-        try {
-          return body.contentLength();
-        } catch (IOException e) {
-          return 0L;
+        public SimpleRequestFacade(Request request) {
+            this.requestBuilder = request.newBuilder();
+            HttpUrl httpUrl = request.httpUrl();
+            this.path = java.net.URLDecoder.decode(httpUrl.encodedPath());
+            this.httpUrlBuilder = httpUrl.newBuilder();
         }
-      }
 
-      @Override public InputStream in() throws IOException {
-        return body.byteStream();
-      }
-    };
-  }
+        public Request.Builder requestBuilder() {
+            httpUrlBuilder.encodedPath(path);
+            return requestBuilder;
+        }
 
-  private static List<Header> createHeaders(Headers headers) {
-    int size = headers.size();
-    List<Header> headerList = new ArrayList<Header>(size);
-    for (int i = 0; i < size; i++) {
-      headerList.add(new Header(headers.name(i), headers.value(i)));
+        public Request request() {
+            return requestBuilder().url(httpUrlBuilder.build()).build();
+        }
+
+        @Override public void addEncodedPathParam(String name, String value) {
+            if (name == null || "".equals(name)) {
+                path += "/" + value;
+            } else {
+                path = path.replace("{" + name + "}", value);
+            }
+        }
+        @Override public void addEncodedQueryParam(String name, String value) {
+            httpUrlBuilder.addEncodedQueryParameter(name, value);
+        }
+        @Override public void addHeader(String name, String value) {
+            requestBuilder.addHeader(name, value);
+        }
+        @Override public void addPathParam(String name, String value) {
+            addEncodedPathParam(java.net.URLDecoder.decode(name), java.net.URLDecoder.decode(value));
+        }
+        @Override public void addQueryParam(String name, String value) {
+            httpUrlBuilder.addQueryParameter(name, value);
+        }
     }
-    return headerList;
-  }
 
-  /** Simple logging abstraction for debug messages. */
-  public interface Log {
-    /** Log a debug message to the appropriate console. */
-    void log(String message);
+    static retrofit.client.Response parseResponse(com.squareup.okhttp.Response response) {
+        return new retrofit.client.Response(response.request().urlString(), response.code(), response.message(),
+                createHeaders(response.headers()), createResponseBody(response.body()));
+    }
 
-    /** A {@link Log} implementation which does not log anything. */
-    Log NONE = new Log() {
-      @Override public void log(String message) {
-      }
+    private static TypedInput createResponseBody(final ResponseBody body) {
+        try {
+            if (body.contentLength() == 0) {
+                return null;
+            }
+        } catch (IOException e) {
+            return null;
+        }
+        return new TypedInput() {
+            @Override public String mimeType() {
+                MediaType mediaType = body.contentType();
+                return mediaType == null ? null : mediaType.toString();
+            }
+
+            @Override public long length() {
+                try {
+                    return body.contentLength();
+                } catch (IOException e) {
+                    return 0L;
+                }
+            }
+
+            @Override public InputStream in() throws IOException {
+                return body.byteStream();
+            }
+        };
+    }
+
+    private static List<Header> createHeaders(Headers headers) {
+        int size = headers.size();
+        List<Header> headerList = new ArrayList<Header>(size);
+        for (int i = 0; i < size; i++) {
+            headerList.add(new Header(headers.name(i), headers.value(i)));
+        }
+        return headerList;
+    }
+
+    /** Simple logging abstraction for debug messages. */
+    public interface Log {
+        /** Log a debug message to the appropriate console. */
+        void log(String message);
+
+        /** A {@link Log} implementation which does not log anything. */
+        Log NONE = new Log() {
+            @Override public void log(String message) {
+            }
+        };
+    }
+
+    // TODO @Log()
+    private Log log = new Log() {
+        @Override public void log(String message) {
+            System.out.println(message);
+        }
     };
-  }
-
-  // TODO @Log()
-  private Log log = new Log() {
-      @Override public void log(String message) {
-          System.out.println(message);
-      }
-  };
 
   /** Log request headers and body. Consumes request body and returns identical replacement. */
   Request logAndReplaceRequest(String name, Request request, String bodyString) throws IOException {
@@ -645,6 +683,7 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
   */
 
   /** Log an exception that occurred during the processing of a request or response. */
+  /*
   void logException(Throwable t, String url) {
     log.log(String.format("---- ERROR %s", url != null ? url : ""));
     StringWriter sw = new StringWriter();
@@ -652,5 +691,5 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
     log.log(sw.toString());
     log.log("---- END ERROR");
   }
-
+  */
 }
