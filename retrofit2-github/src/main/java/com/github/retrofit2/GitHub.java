@@ -44,8 +44,9 @@ import retrofit.Callback;
 )
 @Retrofit.Converter(GsonConverter.class) // optional
 //@Retrofit.Converter(LoganSquareConverter.class) // default
-@Retrofit.LogLevel(retrofit.RestAdapter.LogLevel.FULL) // optional
-@Retrofit.RequestInterceptor(GitHubRequestInterceptor.class)
+@LogLevel(retrofit.RestAdapter.LogLevel.FULL) // optional
+@RequestInterceptor(GitHubRequestInterceptor.class)
+@ErrorHandler(GitHubErrorHandler.class)
 public abstract class GitHub {
     @GET("/repos/{owner}/{repo}/contributors")
     public abstract Observable<List<Contributor>> contributorList(

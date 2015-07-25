@@ -320,6 +320,18 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
 
     #end
 
+        #if ($errorHandler != "")
+
+        }).onErrorResumeNext(new Func1<Throwable, Observable<com.squareup.okhttp.Response>>() {
+            @Override public Observable<com.squareup.okhttp.Response> call(Throwable e) {
+                if (e instanceof IOException) {
+                    return Observable.error(retrofit.RetrofitError.networkError(_finalUrl, (IOException) e));
+                }
+                return Observable.error(e);
+            }
+
+        #end
+
         })
         .cache();
 
@@ -396,15 +408,19 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
 
         #if ($errorHandler != "")
 
-            .onErrorResumeNext(new Func1<Throwable, Observable<com.squareup.okhttp.Response>>() {
-                @Override public Observable<com.squareup.okhttp.Response> call(Throwable e) {
+            .onErrorResumeNext(new Func1<Throwable, Observable<retrofit.client.Response>>() {
+                @Override public Observable<retrofit.client.Response> call(Throwable e) {
                     retrofit.RetrofitError retrofitError = null;
-                    if (e instanceof !retrofit.RetrofitError) {
+                    if (e instanceof retrofit.RetrofitError) {
                         retrofitError = (retrofit.RetrofitError) e;
                     } else {
-                        retrofitError = new retrofit.RetrofitError.unexpectedError(_finalUrl, e);
+                        retrofitError = retrofit.RetrofitError.unexpectedError(_finalUrl, e);
                     }
-                    return Observable.error(errorHanlder.handleError(retrofitError));
+                    // network error should be handled before
+                    if (retrofitError.getKind() == RetrofitError.Kind.NETWORK) {
+                        return Observable.error(retrofitError);
+                    }
+                    return Observable.error(errorHandler.handleError(retrofitError));
                 }
             })
 
@@ -418,15 +434,15 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
 
         #if ($errorHandler != "")
 
-            .onErrorResumeNext(new Func1<Throwable, Observable<com.squareup.okhttp.Response>>() {
-                @Override public Observable<com.squareup.okhttp.Response> call(Throwable e) {
+            .onErrorResumeNext(new Func1<Throwable, Observable<$p.type>>() {
+                @Override public Observable<$p.type> call(Throwable e) {
                     retrofit.RetrofitError retrofitError = null;
-                    if (e instanceof !retrofit.RetrofitError) {
+                    if (e instanceof retrofit.RetrofitError) {
                         retrofitError = (retrofit.RetrofitError) e;
                     } else {
-                        retrofitError = new retrofit.RetrofitError.unexpectedError(_finalUrl, e);
+                        retrofitError = retrofit.RetrofitError.unexpectedError(_finalUrl, e);
                     }
-                    return Observable.error(errorHanlder.handleError(retrofitError));
+                    return Observable.error(errorHandler.handleError(retrofitError));
                 }
             })
 
@@ -442,15 +458,15 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
 
         #if ($errorHandler != "")
 
-            .onErrorResumeNext(new Func1<Throwable, Observable<com.squareup.okhttp.Response>>() {
-                @Override public Observable<com.squareup.okhttp.Response> call(Throwable e) {
+            .onErrorResumeNext(new Func1<Throwable, Observable<$p.typeArgs>>() {
+                @Override public Observable<$p.typeArgs> call(Throwable e) {
                     retrofit.RetrofitError retrofitError = null;
-                    if (e instanceof !retrofit.RetrofitError) {
+                    if (e instanceof retrofit.RetrofitError) {
                         retrofitError = (retrofit.RetrofitError) e;
                     } else {
-                        retrofitError = new retrofit.RetrofitError.unexpectedError(_finalUrl, e);
+                        retrofitError = retrofit.RetrofitError.unexpectedError(_finalUrl, e);
                     }
-                    return Observable.error(errorHanlder.handleError(retrofitError));
+                    return Observable.error(errorHandler.handleError(retrofitError));
                 }
             })
 
@@ -477,15 +493,15 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
 
         #if ($errorHandler != "")
 
-        .onErrorResumeNext(new Func1<Throwable, Observable<com.squareup.okhttp.Response>>() {
-            @Override public Observable<com.squareup.okhttp.Response> call(Throwable e) {
+        .onErrorResumeNext(new Func1<Throwable, Observable<$p.typeArgs>>() {
+            @Override public Observable<$p.typeArgs> call(Throwable e) {
                 retrofit.RetrofitError retrofitError = null;
-                if (e instanceof !retrofit.RetrofitError) {
+                if (e instanceof retrofit.RetrofitError) {
                     retrofitError = (retrofit.RetrofitError) e;
                 } else {
-                    retrofitError = new retrofit.RetrofitError.unexpectedError(_finalUrl, e);
+                    retrofitError = retrofit.RetrofitError.unexpectedError(_finalUrl, e);
                 }
-                return Observable.error(errorHanlder.handleError(retrofitError));
+                return Observable.error(errorHandler.handleError(retrofitError));
             }
         })
 
@@ -512,15 +528,15 @@ public final class $subclass$formalTypes extends $origClass$actualTypes {
 
         #if ($errorHandler != "")
 
-        .onErrorResumeNext(new Func1<Throwable, Observable<com.squareup.okhttp.Response>>() {
-            @Override public Observable<com.squareup.okhttp.Response> call(Throwable e) {
+        .onErrorResumeNext(new Func1<Throwable, Observable<$p.typeArgs>>() {
+            @Override public Observable<$p.typeArgs> call(Throwable e) {
                 retrofit.RetrofitError retrofitError = null;
-                if (e instanceof !retrofit.RetrofitError) {
+                if (e instanceof retrofit.RetrofitError) {
                     retrofitError = (retrofit.RetrofitError) e;
                 } else {
-                    retrofitError = new retrofit.RetrofitError.unexpectedError(_finalUrl, e);
+                    retrofitError = retrofit.RetrofitError.unexpectedError(_finalUrl, e);
                 }
-                return Observable.error(errorHanlder.handleError(retrofitError));
+                return Observable.error(errorHandler.handleError(retrofitError));
             }
         })
 
