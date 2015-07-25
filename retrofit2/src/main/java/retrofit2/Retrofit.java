@@ -124,6 +124,7 @@ public @interface Retrofit {
     Class<? extends retrofit.converter.Converter> value() default retrofit.converter.Converter.class;
   }
 
+  // TODO aspect alternative?
   @Retention(RetentionPolicy.RUNTIME) // RUNTIME, keep annotation for anothor processor
   @Target({ElementType.METHOD, ElementType.TYPE})
   public @interface LogLevel { // For @LogLevel @GET|@PUT|@POST|@DELETE, @LogLevel class

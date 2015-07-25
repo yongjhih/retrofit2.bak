@@ -462,48 +462,45 @@ public class RetrofitProcessor extends AbstractProcessor {
 
     private String buildTypeArgument(TypeMirror type) {
       if (type != null) {
-          List<? extends TypeMirror> params = ((DeclaredType) type).getTypeArguments();
-          return typeSimplifier.simplify(params.get(0));
+        List<? extends TypeMirror> params = ((DeclaredType) type).getTypeArguments();
+        return typeSimplifier.simplify(params.get(0));
       }
       return "";
     }
 
     public boolean buildIsGet(ExecutableElement method) {
-        // TODO duplicated routine
-        return method.getAnnotation(Retrofit.GET.class) != null;
+      // TODO duplicated routine
+      return method.getAnnotation(Retrofit.GET.class) != null || method.getAnnotation(retrofit.http.HEAD.class) != null;
     }
 
     public boolean buildIsPost(ExecutableElement method) {
-        // TODO duplicated routine
-        return method.getAnnotation(Retrofit.POST.class) != null;
+      // TODO duplicated routine
+      return method.getAnnotation(Retrofit.POST.class) != null || method.getAnnotation(retrofit.http.HEAD.class) != null;
     }
 
     public boolean buildIsPut(ExecutableElement method) {
-        // TODO duplicated routine
-        return method.getAnnotation(Retrofit.PUT.class) != null;
+      // TODO duplicated routine
+      return method.getAnnotation(Retrofit.PUT.class) != null || method.getAnnotation(retrofit.http.HEAD.class) != null;
     }
 
     public boolean buildIsDelete(ExecutableElement method) {
-        // TODO duplicated routine
-        return method.getAnnotation(Retrofit.DELETE.class) != null;
+      // TODO duplicated routine
+      return method.getAnnotation(Retrofit.DELETE.class) != null || method.getAnnotation(retrofit.http.HEAD.class) != null;
     }
 
     public boolean buildIsHead(ExecutableElement method) {
-        // TODO duplicated routine
-        return method.getAnnotation(Retrofit.HEAD.class) != null;
+      // TODO duplicated routine
+      return method.getAnnotation(Retrofit.HEAD.class) != null || method.getAnnotation(retrofit.http.HEAD.class) != null;
     }
 
     public String buildBody(ExecutableElement method) {
       String body = "";
 
-      // TODO duplicated routine
-      Retrofit.POST post = method.getAnnotation(Retrofit.POST.class);
-      if (post == null) return body;
+      if (method.getAnnotation(Retrofit.POST.class) == null && method.getAnnotation(retrofit.http.POST.class) == null) return body;
 
-      // TODO duplicated code
       List<? extends VariableElement> parameters = method.getParameters();
       for (VariableElement parameter : parameters) {
-        if (parameter.getAnnotation(Retrofit.Body.class) != null) {
+        if (parameter.getAnnotation(Retrofit.Body.class) != null || method.getAnnotation(retrofit.http.Body.class) != null) {
           body = parameter.getSimpleName().toString();
         }
       }
@@ -526,10 +523,18 @@ public class RetrofitProcessor extends AbstractProcessor {
 
     public Map<String, String> buildHeaders(ExecutableElement method) {
       Map<String, String> map = new HashMap<String, String>();
-      Retrofit.Headers arrayAnnotation = method.getAnnotation(Retrofit.Headers.class);
-      if (arrayAnnotation == null) return Collections.emptyMap();
+      String[] headers;
 
-      String[] headers = arrayAnnotation.value();
+      Retrofit.Headers headersAnnotation = method.getAnnotation(Retrofit.Headers.class);
+      retrofit.http.Headers headers1Annotation = method.getAnnotation(retrofit.http.Headers.class);
+      if (headersAnnotation != null) {
+        headers = headersAnnotation.value();
+      } else if (headers1Annotation != null) {
+        headers = headers1Annotation.value();
+      } else {
+        return Collections.emptyMap();
+      }
+
       for (String header : headers) {
         String[] tokens = header.split(":");
         map.put(tokens[0].trim(), "\"" + tokens[1].trim() + "\"");
@@ -537,11 +542,16 @@ public class RetrofitProcessor extends AbstractProcessor {
 
       List<? extends VariableElement> parameters = method.getParameters();
       for (VariableElement parameter : parameters) {
-        Retrofit.Header header = parameter
-          .getAnnotation(Retrofit.Header.class);
-        if (header == null) continue;
-
-        String key = header.value().equals("") ? parameter.getSimpleName().toString() : header.value();
+        Retrofit.Header header = parameter.getAnnotation(Retrofit.Header.class);
+        retrofit.http.Header header1 = parameter.getAnnotation(retrofit.http.Header.class);
+        String key = null;
+        if (header != null) {
+          key = header.value().equals("") ? parameter.getSimpleName().toString() : header.value();
+        } else if (header1 != null) {
+          key = header1.value().equals("") ? parameter.getSimpleName().toString() : header1.value();
+        } else {
+          continue;
+        }
         map.put(key, parameter.getSimpleName().toString());
       }
 
@@ -554,11 +564,16 @@ public class RetrofitProcessor extends AbstractProcessor {
 
       List<? extends VariableElement> parameters = method.getParameters();
       for (VariableElement parameter : parameters) {
-        Retrofit.Field field = parameter
-          .getAnnotation(Retrofit.Field.class);
-        if (field == null) continue;
-
-        String key = field.value().equals("") ? parameter.getSimpleName().toString() : field.value();
+        Retrofit.Field field = parameter.getAnnotation(Retrofit.Field.class);
+        retrofit.http.Field field1 = parameter.getAnnotation(retrofit.http.Field.class);
+        String key = null;
+        if (field != null) {
+          key = field.value().equals("") ? parameter.getSimpleName().toString() : field.value();
+        } else if (field1 != null) {
+          key = field1.value().equals("") ? parameter.getSimpleName().toString() : field1.value();
+        } else {
+          continue;
+        }
         map.put(key, parameter.getSimpleName().toString());
       }
 
@@ -575,18 +590,26 @@ public class RetrofitProcessor extends AbstractProcessor {
 
       List<? extends VariableElement> parameters = method.getParameters();
       for (VariableElement parameter : parameters) {
-        Retrofit.Part partAnnotation = parameter
-          .getAnnotation(Retrofit.Part.class);
-        if (partAnnotation == null) continue;
+        String mimeType = "";
+        String value = "";
+        Retrofit.Part partAnnotation = parameter.getAnnotation(Retrofit.Part.class);
+        retrofit.http.Part part1Annotation = parameter.getAnnotation(retrofit.http.Part.class);
+        if (partAnnotation != null) {
+          value = partAnnotation.value();
+          mimeType = partAnnotation.mimeType();
+        } else if (part1Annotation != null) {
+          value = part1Annotation.value();
+        } else {
+          continue;
+        }
 
-        String mimeType = partAnnotation.mimeType();
         TypeMirror type = parameter.asType();
         boolean isFile = typeUtils.isSubtype(type, fileType);
         boolean isTypedFile = typeUtils.isSubtype(type, typedFileType);
         boolean isTypedString = typeUtils.isSubtype(type, typedStringType);
         boolean isTypedByteArray = typeUtils.isSubtype(type, typedByteArrayType);
 
-        String key = partAnnotation.value().equals("") ? parameter.getSimpleName().toString() : partAnnotation.value();
+        String key = value.equals("") ? parameter.getSimpleName().toString() : value;
         map.put(key, new Part(parameter.getSimpleName().toString(), mimeType, isFile, isTypedFile, isTypedString, isTypedByteArray));
       }
       return map;
@@ -601,10 +624,13 @@ public class RetrofitProcessor extends AbstractProcessor {
 
       List<? extends VariableElement> parameters = method.getParameters();
       for (VariableElement parameter : parameters) {
-        Retrofit.Path path = parameter
-            .getAnnotation(Retrofit.Path.class);
+        Retrofit.Path path = parameter.getAnnotation(Retrofit.Path.class);
+        retrofit.http.Path path1 = parameter.getAnnotation(retrofit.http.Path.class);
         if ((path != null) && (!path.value().equals(""))) {
           fullPath = fullPath.replace("{" + path.value() + "}", "\" + " +
+              parameter.getSimpleName().toString() + " + \"");
+        } else if ((path1 != null) && (!path1.value().equals(""))) {
+          fullPath = fullPath.replace("{" + path1.value() + "}", "\" + " +
               parameter.getSimpleName().toString() + " + \"");
         } else {
           fullPath = fullPath.replace("{" + parameter.getSimpleName().toString() + "}", "\" + " +
@@ -617,17 +643,27 @@ public class RetrofitProcessor extends AbstractProcessor {
 
     public String buildRawPath(ExecutableElement method) {
       // TODO duplicated routine
+      String rawPath = null;
       Retrofit.GET get = method.getAnnotation(Retrofit.GET.class);
       Retrofit.PUT put = method.getAnnotation(Retrofit.PUT.class);
       Retrofit.POST post = method.getAnnotation(Retrofit.POST.class);
       Retrofit.DELETE delete = method.getAnnotation(Retrofit.DELETE.class);
       Retrofit.HEAD head = method.getAnnotation(Retrofit.HEAD.class);
-      String rawPath = null;
       if (get != null) rawPath = get.value();
       if (put != null) rawPath = put.value();
       if (post != null) rawPath = post.value();
       if (delete != null) rawPath = delete.value();
       if (head != null) rawPath = head.value();
+      retrofit.http.GET get1 = method.getAnnotation(retrofit.http.GET.class);
+      retrofit.http.PUT put1 = method.getAnnotation(retrofit.http.PUT.class);
+      retrofit.http.POST post1 = method.getAnnotation(retrofit.http.POST.class);
+      retrofit.http.DELETE delete1 = method.getAnnotation(retrofit.http.DELETE.class);
+      retrofit.http.HEAD head1 = method.getAnnotation(retrofit.http.HEAD.class);
+      if (get1 != null) rawPath = get1.value();
+      if (put1 != null) rawPath = put1.value();
+      if (post1 != null) rawPath = post1.value();
+      if (delete1 != null) rawPath = delete1.value();
+      if (head1 != null) rawPath = head1.value();
       return rawPath;
     }
 
@@ -646,8 +682,16 @@ public class RetrofitProcessor extends AbstractProcessor {
 
       List<? extends VariableElement> parameters = method.getParameters();
       for (VariableElement parameter : parameters) {
+        String value = "";
         Retrofit.Query query = parameter.getAnnotation(Retrofit.Query.class);
-        if (query == null) continue;
+        retrofit.http.Query query1 = parameter.getAnnotation(retrofit.http.Query.class);
+        if (query != null) {
+          value = query.value();
+        } else if (query1 != null) {
+          value = query1.value();
+        } else {
+          continue;
+        }
 
         String key = query.value().equals("") ? parameter.getSimpleName().toString() : query.value();
         map.put(key, parameter.getSimpleName().toString());
@@ -660,9 +704,11 @@ public class RetrofitProcessor extends AbstractProcessor {
       List<String> queryMaps = new ArrayList<String>();
       List<? extends VariableElement> parameters = method.getParameters();
       for (VariableElement parameter : parameters) {
-        Retrofit.QueryMap queryMap = parameter
-            .getAnnotation(Retrofit.QueryMap.class);
-        if (queryMap == null) {
+        Retrofit.QueryMap queryMap = parameter.getAnnotation(Retrofit.QueryMap.class);
+        retrofit.http.QueryMap queryMap1 = parameter.getAnnotation(retrofit.http.QueryMap.class);
+        if (queryMap != null) {
+        } else if (queryMap1 != null) {
+        } else {
           continue;
         }
 
@@ -675,8 +721,7 @@ public class RetrofitProcessor extends AbstractProcessor {
       List<String> queryBundles = new ArrayList<String>();
       List<? extends VariableElement> parameters = method.getParameters();
       for (VariableElement parameter : parameters) {
-        Retrofit.QueryBundle queryBundle = parameter
-            .getAnnotation(Retrofit.QueryBundle.class);
+        Retrofit.QueryBundle queryBundle = parameter.getAnnotation(Retrofit.QueryBundle.class);
         if (queryBundle == null) {
           continue;
         }
