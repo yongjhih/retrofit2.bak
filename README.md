@@ -23,7 +23,7 @@ google/dagger2 has also re-implemented square/dagger.
 
 Retrofit 2 has implemented almost retrofit’s features. And bonus:
 
-* [@RetryHeaders](#support-retry-headers-retryheaders)
+* [@RetryHeaders](#support-retryheaders)
 * [Global Headers](#global-headers)
 * [@Converter](#custom-converter-for-method)
 
