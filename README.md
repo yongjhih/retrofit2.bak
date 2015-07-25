@@ -309,7 +309,7 @@ abstract class GitHub {
 
 If you need to communicate with an API that uses a content-format that Retrofit does not support out of the box (e.g. YAML, txt, custom format) or you wish to use a different library to implement an existing format, you can easily create your own converter. Create a class that implements the [`Converter` interface](https://github.com/square/retrofit/blob/master/retrofit/src/main/java/retrofit/converter/Converter.java) and pass in an instance when building your adapter.
 
-## CUSTOM ERROR HANDLING (in progress)
+## CUSTOM ERROR HANDLING
 
 If you need custom error handling for requests, you may provide your own ErrorHandler. The following code shows how to throw a custom exception when a response returns a HTTP 401 status code
 
