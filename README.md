@@ -28,6 +28,8 @@ Retrofit 2 has implemented almost retrofit’s features. And bonus:
 * [Global Headers](#global-headers)
 * [@Converter](#custom-converter-for-method)
 
+[Mirgration of Retrofit2](#migration)
+
 # Usage
 
 ```java
@@ -360,6 +362,25 @@ Retry the request with cache if `RequestException` thats network issue.
 public abstract class GitHub {
     // ..
 }
+```
+
+## Migration
+
+1. Add `@Retrofit("https://api.github.com")` line
+2. Change `interface GitHub` to `abstract class GitHub`
+3. Add `public static GitHub create() { return new Retrofit_GitHub(); }`
+
+For example:
+
+```java
+@Retrofit("https://api.github.com") // 1. Add this line
+public abstract class GitHub { // 2. Change to abstract class
+  @GET("/users/{user}/repos")
+  List<Repo> listRepos(@Path("user") String user);
+  public static GitHub create() { return new Retrofit_GitHub(); } // 3. Add creator
+}
+
+Github github = GitHub.create();
 ```
 
 ## Installation
