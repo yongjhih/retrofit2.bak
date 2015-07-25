@@ -76,8 +76,8 @@ public class PropertyAnnotationsTest extends TestCase {
         .add(
             "package foo.bar;",
             "",
-            "import retrofit2.Retrofit;",
-            "import retrofit2.Retrofit.GET;"
+            "import retrofit.http.Retrofit;",
+            "import retrofit.http.Retrofit.GET;"
         )
         .addAll(imports)
         .add(

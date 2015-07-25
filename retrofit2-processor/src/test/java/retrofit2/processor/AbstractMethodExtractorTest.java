@@ -14,7 +14,7 @@ import java.io.StringReader;
 public class AbstractMethodExtractorTest extends TestCase {
   public void testSimple() {
     String source = "package com.example;\n"
-        + "import retrofit2.Retrofit;\n"
+        + "import retrofit.http.Retrofit;\n"
         + "import java.util.Map;\n"
         + "@Retrofit"
         + "abstract class Foo {\n"
@@ -37,7 +37,7 @@ public class AbstractMethodExtractorTest extends TestCase {
 
   public void testNested() {
     String source = "package com.example;\n"
-        + "import retrofit2.Retrofit;\n"
+        + "import retrofit.http.Retrofit;\n"
         + "import java.util.Map;\n"
         + "abstract class Foo {\n"
         + "  @Retrofit\n"
@@ -74,7 +74,7 @@ public class AbstractMethodExtractorTest extends TestCase {
     // Regression test for a bug where String.class was parsed as introducing a class definition
     // of a later identifier.
     String source = "package com.example;\n"
-        + "import retrofit2.Retrofit;\n"
+        + "import retrofit.http.Retrofit;\n"
         + "import com.google.common.collect.ImmutableSet;\n"
         + "import com.google.common.labs.reflect.ValueType;\n"
         + "import com.google.common.primitives.Primitives;\n"

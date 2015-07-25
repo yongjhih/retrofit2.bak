@@ -13,8 +13,8 @@
  */
 package com.github.retrofit2;
 
-import retrofit2.Retrofit;
-import retrofit2.Retrofit.*;
+import retrofit.http.Retrofit;
+import retrofit.http.Retrofit.*;
 
 import rx.Observable;
 import java.io.File;

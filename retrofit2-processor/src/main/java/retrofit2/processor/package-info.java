@@ -13,6 +13,6 @@
  */
 /**
  * This package contains the annotation processor that implements the
- * {@link retrofit2.Retrofit} API.
+ * {@link retrofit.http.Retrofit} API.
  */
 package retrofit2.processor;

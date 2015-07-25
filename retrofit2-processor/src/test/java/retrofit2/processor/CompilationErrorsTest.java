@@ -98,8 +98,8 @@ public class CompilationErrorsTest extends TestCase {
   public void testAssertCompilationFails() throws Exception {
     String testSourceCode =
         "package foo.bar;\n" +
-        "import retrofit2.Retrofit;\n" +
-        "import retrofit2.Retrofit.GET;\n" +
+        "import retrofit.http.Retrofit;\n" +
+        "import retrofit.http.Retrofit.GET;\n" +
         "@Retrofit\n" +
         "public abstract class Baz {\n" +
         "  @GET(\"/\")" +

@@ -29,7 +29,7 @@ import org.apache.velocity.app.Velocity;
 
 import java.net.URLClassLoader;
 
-import retrofit2.Retrofit;
+import retrofit.http.Retrofit;
 import retrofit2.processor.RetrofitProcessor;
 
 /**

@@ -15,7 +15,7 @@
  */
 package retrofit2.processor;
 
-import retrofit2.Retrofit;
+import retrofit.http.Retrofit;
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
 import com.google.common.base.Equivalence;

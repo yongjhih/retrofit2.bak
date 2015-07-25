@@ -16,7 +16,7 @@
  */
 package retrofit2.processor;
 
-import retrofit2.Retrofit;
+import retrofit.http.Retrofit;
 import retrofit.RetrofitError;
 import retrofit.Callback;
 import com.google.auto.service.AutoService;
@@ -80,7 +80,7 @@ import javax.lang.model.type.MirroredTypeException;
  * class.
  *
  * @author Éamonn McManus
- * @see retrofit2.Retrofit
+ * @see retrofit.http.Retrofit
  */
 @AutoService(Processor.class)
 public class RetrofitProcessor extends AbstractProcessor {

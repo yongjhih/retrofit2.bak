@@ -13,15 +13,6 @@
  */
 package com.github.retrofit2;
 
-import retrofit2.Retrofit;
-import retrofit2.Retrofit.*;
-
-import rx.Observable;
-import java.io.File;
-
-import retrofit.converter.*;
-import java.util.List;
-import rx.functions.*;
 import retrofit.RequestInterceptor;
 
 public class GitHubRequestInterceptor implements RequestInterceptor {

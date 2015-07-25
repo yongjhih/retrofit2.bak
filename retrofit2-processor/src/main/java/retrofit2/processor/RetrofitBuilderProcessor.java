@@ -17,7 +17,7 @@ package retrofit2.processor;
 
 import static com.google.auto.common.MoreElements.isAnnotationPresent;
 
-import retrofit2.Retrofit;
+import retrofit.http.Retrofit;
 import com.google.auto.common.MoreElements;
 import com.google.auto.common.SuperficialValidation;
 import com.google.auto.service.AutoService;
