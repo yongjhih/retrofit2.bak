@@ -469,9 +469,8 @@ Github sample app:
 
 ## See Also
 
-jw/retrofit-two?
-
-* https://github.com/JakeWharton/u2020/compare/jw/retrofit-two
+* jw/retrofit-two? https://github.com/JakeWharton/u2020/compare/jw/retrofit-two
+* square/jw/code-gen, 49407dbb19f48072ab5fce8a49f38606ce07bd27, 2013
 
 ## Credit
 
