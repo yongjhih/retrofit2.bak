@@ -393,6 +393,17 @@ abstract class GitHub { // 2. Change to abstract class
 Github github = GitHub.create();
 ```
 
+Another way:
+
+```java
+@Retrofit("https://api.github.com")
+abstract class GitHubBean implements GitHub {
+  public static GitHub create() { return new Retrofit_GitHub(); }
+}
+
+Github github = GitHubBean.create();
+```
+
 ## Installation
 
 via jcenter:
