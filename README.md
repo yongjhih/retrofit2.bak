@@ -467,6 +467,12 @@ Github sample app:
 * https://github.com/square/okhttp/wiki/Recipes
 * http://square.github.io/okhttp/javadoc/com/squareup/okhttp/RequestBody.html
 
+## See Also
+
+jw/retrofit-two?
+
+* https://github.com/JakeWharton/u2020/compare/jw/retrofit-two
+
 ## Credit
 
 * Square, Inc.
