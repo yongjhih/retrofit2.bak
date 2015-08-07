@@ -1,5 +1,7 @@
 # retrofit2
 
+[Deprecated] yongjhih/retrofit2 have merged into yongjhih/retrofit fork from square/retrofit (follows google/dagger mode)
+
 [![Download](https://api.bintray.com/packages/yongjhih/maven/retrofit2/images/download.svg)](https://bintray.com/yongjhih/maven/retrofit2/_latestVersion)
 [![JitPack](https://img.shields.io/github/tag/yongjhih/retrofit2.svg?label=JitPack)](https://jitpack.io/#yongjhih/retrofit2)
 [![javadoc](https://img.shields.io/github/tag/yongjhih/retrofit2.svg?label=javadoc)](https://jitpack.io/com/github/yongjhih/retrofit2/simpleweibo/1.0.2/javadoc/index.html)
